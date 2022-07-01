@@ -2,9 +2,10 @@
   "name": "vve-statsvn",
   "version": "1.0.0",
   "description": "",
-  "bin": {
-    "start": "./bin/index.js"
+  "scripts": {
+    "start": "node ./bin/index.js"
   },
+  "bin": {},
   "files": [
     "bin"
   ],
@@ -19,17 +20,18 @@
   ],
   "author": "nianqin",
   "license": "MIT",
-  "bugs": {
-  },
+  "bugs": {},
   "dependencies": {
     "commander": "^3.0.2",
     "debug": "^4.1.1",
     "jsonfile": "^5.0.0",
+    "lodash": "^4.17.21",
     "lodash.uniq": "^4.5.0",
     "map-stream": "0.0.7",
     "svn-spawn": "^0.1.6",
     "translation.js": "^0.7.9",
-    "vinyl-fs": "^3.0.3"
+    "vinyl-fs": "^3.0.3",
+    "xml-js": "^1.6.11"
   },
   "devDependencies": {
     "chai": "^4.2.0",

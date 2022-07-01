@@ -1,0 +1,14 @@
+Index: eweb-vlan/components/deviceManage/deviceBase/deviceBaseInfo.vue
+===================================================================
+--- eweb-vlan/components/deviceManage/deviceBase/deviceBaseInfo.vue	(revision 13)
++++ eweb-vlan/components/deviceManage/deviceBase/deviceBaseInfo.vue	(revision 14)
+@@ -1020,7 +1020,8 @@
+       treeTag: "全部标签",
+       activeName: "first",
+       bindTag: {},
+-      query: {
++      query: {
++		name: "",
+         typeId: "",
+         deviceIP: "不限",
+       },
