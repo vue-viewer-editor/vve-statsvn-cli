@@ -53,6 +53,9 @@ async function run () {
 
   var ret = {
     total: 0,
+    paths: [], // { path: '', lineTotal: 0 }
+    failPaths: [], // { path: '' }
+    ingorePaths: [], // { path: '', err: '' }
   }
   
   var infoResult = await clientGetInfo(client)
@@ -85,11 +88,7 @@ async function run () {
           if (filePath) {
             filePath = filePath.slice(1) // 去除第一个/
 
-            
-
             if (ingorePaths.reduce((val, item) => !minimatch(filePath, item) && val, true)) {
-
-              console.log('filePath', filePath)
 
               // diff比较
               const diffResult = await clientCmd(client, ['diff', '-c', version, filePath])
@@ -102,12 +101,14 @@ async function run () {
                   return item.startsWith('+') && !item.startsWith("+++") && !!item.trim()
                 })
 
+                ret.paths.push({ path: filePath, lineTotal: validArr.length })
+
                 ret.total += validArr.length
               } else {
-                console.log('diffResult.err', diffResult.err)
+                ret.failPaths.push({ path: filePath, err: diffResult.err })
               }
             } else {
-              console.log('ignorePath', filePath)
+              ret.ingorePaths.push({ path: filePath })
             }
           } else {
             // 为空未根目录
@@ -117,6 +118,7 @@ async function run () {
     }
   }
   console.log(ret.total)
+  console.log(ret.paths.map(item => item.path + ' ' + item.lineTotal).join('\n'))
 }
 
 run ()
