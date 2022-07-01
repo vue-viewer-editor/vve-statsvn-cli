@@ -38,6 +38,10 @@ async function run () {
     // password: 'password', // optional if authentication not required or is already saved
     // noAuthCache: true, // optional, if true, username does not become the logged in user on the machine
   });
+
+  var ret = {
+    total: 0,
+  }
   
   var infoResult = await clientGetInfo(client)
   if (!infoResult.err) {
@@ -67,17 +71,18 @@ async function run () {
 
           if (filePath) {
             filePath = filePath.slice(1) // 去除第一个/
-            console.log(filePath)
-
-            console.log('version', version, filePath)
-            
 
             const diffResult = await clientCmd(client, ['diff', '-c', version, filePath])
             if (!diffResult.err) {
 
-              
+              // grep "^+" ./tmplate|grep -v "^+++"|sed 's/^.//'|sed '/^$/d'|wc -l
+              // 以^+开头，但不已+++，且不已空行开头，不已注释开头（这里实际允许注释//开头）
+              const arr = diffResult.data.split('\n')
+              var validArr = arr.filter(item => {
+                return item.startsWith('+') && !item.startsWith("+++") && !!item.trim()
+              })
 
-              // console.log(diffResult.data)
+              ret.total += validArr.length
             } else {
               console.log('diffResult.err', diffResult.err)
             }
@@ -88,6 +93,7 @@ async function run () {
       }
     }
   }
+  console.log(ret.total)
 }
 
 run ()
