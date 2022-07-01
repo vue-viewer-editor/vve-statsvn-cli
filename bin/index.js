@@ -107,7 +107,7 @@ async function run () {
                 console.log('diffResult.err', diffResult.err)
               }
             } else {
-              // console.log('ignorePath', filePath)
+              console.log('ignorePath', filePath)
             }
           } else {
             // 为空未根目录
