@@ -1,0 +1,41 @@
+{
+  "name": "vve-statsvn",
+  "version": "1.0.0",
+  "description": "",
+  "bin": {
+    "start": "./bin/index.js"
+  },
+  "files": [
+    "bin"
+  ],
+  "repository": {
+    "type": "git"
+  },
+  "keywords": [
+    "vve",
+    "svn",
+    "svnstat",
+    "cli"
+  ],
+  "author": "nianqin",
+  "license": "MIT",
+  "bugs": {
+  },
+  "dependencies": {
+    "commander": "^3.0.2",
+    "debug": "^4.1.1",
+    "jsonfile": "^5.0.0",
+    "lodash.uniq": "^4.5.0",
+    "map-stream": "0.0.7",
+    "svn-spawn": "^0.1.6",
+    "translation.js": "^0.7.9",
+    "vinyl-fs": "^3.0.3"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.2.1",
+    "nyc": "^14.1.1",
+    "shelljs": "^0.8.3",
+    "standard-version": "^7.0.0"
+  }
+}
