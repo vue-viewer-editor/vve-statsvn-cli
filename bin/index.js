@@ -5,7 +5,8 @@
 var Client = require('svn-spawn')
 var convert = require('xml-js');
 var fs = require('fs');
-const { resolve } = require('path');
+var minimatch = require("minimatch")
+var path = require('path')
 
 // promise方法
 function clientGetInfo (client) {
@@ -31,9 +32,20 @@ function clientCmd (client, arr) {
   })
 }
 
+const DEFAULT_IGNORE_PATHS = [
+  'eweb/**',
+  '**/dist/**',
+  '**/node_module/**'
+]
+
+const ingorePaths = DEFAULT_IGNORE_PATHS
+
 async function run () {
+
+  const projectPath = 'G:\\SvnWorkspaces\\20220629-inc-inc-emb-trunk-yr'
+
   var client = new Client({
-    cwd: 'G:\\SvnWorkspaces\\20220629-inc-inc-emb-trunk-yr',
+    cwd: projectPath,
     // username: 'username', // optional if authentication not required or is already saved
     // password: 'password', // optional if authentication not required or is already saved
     // noAuthCache: true, // optional, if true, username does not become the logged in user on the machine
@@ -47,13 +59,14 @@ async function run () {
   if (!infoResult.err) {
     const svnUrl = infoResult.data.url
     const relativeUrl = infoResult.data['relative-url']
-    const logResult = await clientCmd(client, ['log', '-r', '{2022-04-27}:{2022-04-28 15:02:57}', '--xml', '-v'])
+    const logResult = await clientCmd(client, ['log', '-r', '{2022-04-26 00:00:00}:{2022-12-30 23:59:59}', '--xml', '-v'])
     if (!logResult.err) {
       const xmlResult = convert.xml2js(logResult.data, {
         compact: true,
         spaces: 4
       })
-      fs.writeFileSync("./aa.json", JSON.stringify(xmlResult))
+
+      // fs.writeFileSync("./aa.json", JSON.stringify(xmlResult))
 
       if (!Array.isArray(xmlResult.log.logentry)) {
         xmlResult.log.logentry = [xmlResult.log.logentry]
@@ -72,19 +85,29 @@ async function run () {
           if (filePath) {
             filePath = filePath.slice(1) // 去除第一个/
 
-            const diffResult = await clientCmd(client, ['diff', '-c', version, filePath])
-            if (!diffResult.err) {
+            
 
-              // grep "^+" ./tmplate|grep -v "^+++"|sed 's/^.//'|sed '/^$/d'|wc -l
-              // 以^+开头，但不已+++，且不已空行开头，不已注释开头（这里实际允许注释//开头）
-              const arr = diffResult.data.split('\n')
-              var validArr = arr.filter(item => {
-                return item.startsWith('+') && !item.startsWith("+++") && !!item.trim()
-              })
+            if (ingorePaths.reduce((val, item) => !minimatch(filePath, item) && val, true)) {
 
-              ret.total += validArr.length
+              console.log('filePath', filePath)
+
+              // diff比较
+              const diffResult = await clientCmd(client, ['diff', '-c', version, filePath])
+              if (!diffResult.err) {
+
+                // grep "^+" ./tmplate|grep -v "^+++"|sed 's/^.//'|sed '/^$/d'|wc -l
+                // 以^+开头，但不已+++，且不已空行开头，不已注释开头（这里实际允许注释//开头）
+                const arr = diffResult.data.split('\n')
+                var validArr = arr.filter(item => {
+                  return item.startsWith('+') && !item.startsWith("+++") && !!item.trim()
+                })
+
+                ret.total += validArr.length
+              } else {
+                console.log('diffResult.err', diffResult.err)
+              }
             } else {
-              console.log('diffResult.err', diffResult.err)
+              // console.log('ignorePath', filePath)
             }
           } else {
             // 为空未根目录
