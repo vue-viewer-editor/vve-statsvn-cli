@@ -70,6 +70,8 @@ const config = {
     'dist/**',
     '**/node_module/**',
     'node_module/**',
+    '*.gz',
+    '**/*.gz',
     '**/*.jpg', '**/*.jpeg', '**/*.png', '**/*.svg', '**/*.eot', '**/*.ttf', '**/*.woff', '**/*.woff2', '**/*.gif',
     '*.jpg', '*.jpeg', '*.png', '*.svg', '*.eot', '*.ttf', '*.woff', '*.woff2', '*.gif',
   ],
