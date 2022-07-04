@@ -103,16 +103,21 @@ async function runSingle (options) {
         for (fileItem of item.paths.path) {
           let filePath = fileItem._text.replace(new RegExp(relativeUrl), "")
 
-          // 删除的不处理
-          if (filePath && fileItem._attributes.action !== 'D') {
+         
+          if (filePath) {
             filePath = filePath.slice(1) // 去除第一个/
 
-            if (config.ingorePaths.reduce((val, item) => !minimatch(filePath, item) && val, true)) {
+             // 忽略的不处理，删除的不处理，特定后缀不处理
+            if (config.ingorePaths.reduce((val, item) => !minimatch(filePath, item) && val, true) 
+              && fileItem._attributes.action !== 'D') {
 
               // diff比较
               const diffResult = await clientCmd(client, ['diff', '-c', version, filePath])
-              if (!diffResult.err && diffResult.data.length <= config.maxLineThreshold) {
-
+              if (diffResult.err) {
+                ret.failPaths.push({ path: filePath, err: diffResult.err })
+              } else if (config.maxLineThreshold && diffResult.data.length > config.maxLineThreshold)  {
+                ret.ingorePaths.push({ path: filePath })
+              } else {
                 // grep "^+" ./tmplate|grep -v "^+++"|sed 's/^.//'|sed '/^$/d'|wc -l
                 // 以^+开头，但不已+++，且不已空行开头，不已注释开头（这里实际允许注释//开头）
                 const arr = diffResult.data.split('\n')
@@ -123,8 +128,6 @@ async function runSingle (options) {
                 ret.paths.push({ path: filePath, lineTotal: validArr.length })
 
                 ret.total += validArr.length
-              } else {
-                ret.failPaths.push({ path: filePath, err: diffResult.err })
               }
             } else {
               ret.ingorePaths.push({ path: filePath })
