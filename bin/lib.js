@@ -45,12 +45,12 @@ function clientCmd (client, arr) {
  */
 async function runSingle (options) {
 
-  const config = Object.assign({}, options, {
+  const config = Object.assign({
     ingorePaths: [],
     svnRevisionARG: '',
     svnStartDayTime: moment().format("YYYY-MM-DD 00:00:00"), // 默认当天
     svnEndDayTime: moment().format("YYYY-MM-DD 23:59:59"),
-  })
+  }, options)
 
   if (!config.svnRevisionARG) {
     config.svnRevisionARG = `{${config.svnStartDayTime}}:{${config.svnEndDayTime}}`
@@ -102,14 +102,15 @@ async function runSingle (options) {
         for (fileItem of item.paths.path) {
           let filePath = fileItem._text.replace(new RegExp(relativeUrl), "")
 
-          if (filePath) {
+          // 删除的不处理
+          if (filePath && fileItem._attributes.action !== 'D') {
             filePath = filePath.slice(1) // 去除第一个/
 
             if (config.ingorePaths.reduce((val, item) => !minimatch(filePath, item) && val, true)) {
 
               // diff比较
               const diffResult = await clientCmd(client, ['diff', '-c', version, filePath])
-              if (!diffResult.err) {
+              if (!diffResult.err && diffResult.data.length <= 5000) {
 
                 // grep "^+" ./tmplate|grep -v "^+++"|sed 's/^.//'|sed '/^$/d'|wc -l
                 // 以^+开头，但不已+++，且不已空行开头，不已注释开头（这里实际允许注释//开头）
