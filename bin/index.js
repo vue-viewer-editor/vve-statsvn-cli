@@ -2,6 +2,7 @@ const program = require("commander");
 const fs = require("fs");
 var path = require('path')
 var statsvn = require('./lib')
+var chalk = require('chalk')
 
 function commaSeparatedList(value, split = ",") {
   return value.split(split).filter(item => item);
@@ -68,10 +69,37 @@ if (!config.noConfig) {
   }
 }
 
+const log = console.log;
+
+function printLogSingleProject (ret, { projectInfo = false } = {}) {
+  const config = ret.config
+
+  log(chalk.green("---start-----------------------"))
+
+  if (projectInfo) {
+    if (config.alias) {
+      log(`路径：${chalk.blue(config.alias + "（" + config.cwd + "）")}`)
+    } else {
+      log(`路径：${chalk.blue(config.cwd)}`)
+    }
+  }
+  log(`新增代码总行数: ${chalk.blue('%d')}`, ret.total);
+  log(chalk.green("---end-----------------------"))
+}
+
+function printLog (ret) {
+  if (Array.isArray(ret.arr)) {
+    for (let i = 0; i < ret.arr.length; i++) {
+      printLogSingleProject(ret.arr[i], { projectInfo: true })
+    }
+  } else {
+    printLogSingleProject(ret, { projectInfo: true })
+  }
+}
+
 async function run () {
   const ret = await statsvn.run(config)
-  console.log(ret.total)
-  console.log(ret.paths.map(item => item.path + ' ' + item.lineTotal).join('\n'))
+  printLog(ret)
 }
 
 run ()

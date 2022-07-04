@@ -64,6 +64,7 @@ async function runSingle (options) {
   });
 
   var ret = {
+    config,
     total: 0,
     paths: [], // { path: '', lineTotal: 0 }
     failPaths: [], // { path: '' }
@@ -146,6 +147,7 @@ async function runMore (options) {
   const config = Object.assign({}, options)
 
   const ret = {
+    config,
     total: 0, // 总和
     arr: [],
   }
