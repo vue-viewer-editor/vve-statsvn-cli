@@ -56,7 +56,7 @@ program
   .option("--out-dir <path>", "输出目录")
   .option(
     "--config <path>",
-    "配置文件的路径，没有配置，默认路径是在${cwd}/vve-i18n-cli.config.js"
+    "配置文件的路径，没有配置，默认路径是在${cwd}/vve-statsvn-cli.config.js"
   )
   .option("--no-config", "是否取配置文件")
   .parse(process.argv);
@@ -78,7 +78,7 @@ module.exports = {
 const config = {
   // 工作目录
   cwd: ".",
-  // 配置文件的路径，没有配置，默认路径是在${cwd}/vve-i18n-cli.config.js
+  // 配置文件的路径，没有配置，默认路径是在${cwd}/vve-statsvn-cli.config.js
   config: undefined,
   // 是否取配置文件
   noConfig: false,
@@ -92,9 +92,7 @@ const config = {
   subSvnPaths: [],
   // 忽略的路径
   ingorePaths: [
-    'eweb/**',
-    '**/dist/**',
-    '**/node_module/**'
+    '**/node_modules/**'
   ],
   // svn log -r 参数（优先于svnStartDayTime和svnEndDayTime使用）
   svnRevisionARG: '',
