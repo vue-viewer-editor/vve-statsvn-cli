@@ -5,9 +5,12 @@
 var Client = require('svn-spawn')
 var convert = require('xml-js');
 var fs = require('fs');
+var Util = require('./utils')
 var minimatch = require("minimatch")
 var path = require('path')
 var moment = require('moment')
+
+var fsExistsSync = Util.fsExistsSync
 
 // promise方法
 function clientGetInfo (client) {
@@ -71,7 +74,13 @@ async function runSingle (options) {
     failPaths: [], // { path: '' }
     ingorePaths: [], // { path: '', err: '' }
   }
-  
+
+  // 创建缓存目录
+  const statsvnTmpDir = path.resolve(config.cwd, 'statsvnTmp')
+  if (!fsExistsSync(statsvnTmpDir)) {
+    fs.mkdirSync(statsvnTmpDir)
+  }
+
   var infoResult = await clientGetInfo(client)
   if (!infoResult.err) {
     const svnUrl = infoResult.data.url
@@ -115,8 +124,17 @@ async function runSingle (options) {
             if (config.ingorePaths.reduce((val, item) => !minimatch(filePath, item) && val, true) 
               && fileItem._attributes.action !== 'D' && fileItem._attributes.kind === 'file' ) {
 
+              const tmpFilePath = path.resolve(statsvnTmpDir, `diff-${version}-${filePath.replace(/\//g, "-")}`)
+
               // diff比较
-              const diffResult = await clientCmd(client, ['diff', '-c', version, filePath])
+              let diffResult = ''
+              if (fsExistsSync(statsvnTmpDir)) {
+                diffResult = await clientCmd(client, ['diff', '-c', version, filePath])
+                fs.writeFileSync(tmpFilePath, JSON.stringify(diffResult))
+              } else {
+                diffResult = JSON.parse(fs.readFileSync(tmpFilePath).toString())
+              }
+
               if (diffResult.err) {
                 ret.failPaths.push({ path: filePath, err: diffResult.err })
               } else if (config.maxLineThreshold && diffResult.data.split("\n").length > config.maxLineThreshold)  {
