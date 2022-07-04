@@ -82,7 +82,9 @@ async function runSingle (options) {
         spaces: 4
       })
 
-      // fs.writeFileSync("./aa.json", JSON.stringify(xmlResult))
+      if (config.debug) {
+        fs.writeFileSync(path.resolve(config.cwd, "./statsvn-debug-svn-log.json"), JSON.stringify(xmlResult, null, 2))
+      }
 
       if (!xmlResult.log.logentry) {
         xmlResult.log.logentry = []

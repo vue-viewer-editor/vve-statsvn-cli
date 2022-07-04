@@ -3,6 +3,7 @@ const fs = require("fs");
 var path = require('path')
 var statsvn = require('./lib')
 var chalk = require('chalk')
+var format = require('format')
 
 function commaSeparatedList(value, split = ",") {
   return value.split(split).filter(item => item);
@@ -26,6 +27,7 @@ program
     "忽略的路径，满足minimatch规范，用逗号隔开",
     commaSeparatedList
   )
+  .option("--debug", "是否开启debug")
   .option("--out-dir <path>", "输出目录")
   .option(
     "--config <path>",
@@ -43,7 +45,10 @@ const config = {
   config: undefined,
   // 是否取配置文件
   noConfig: false,
-  outDir: 'outdir',
+  // 输出的目录
+  outDir: '',
+  // 是否开启debug
+  debug: false,
   // svn项目，如果传数组，则优先级比cwd和subSvnPaths更高，则不统计当前svn目录${cwd}/${rootDir}
   svnProjectPaths: [],
   // 仅统计项目下subSvnPaths指定的svn目录
@@ -59,7 +64,7 @@ const config = {
   // svn log -r {}:{} 开始时间
   svnStartDayTime: undefined, // moment().format("YYYY-MM-DD 00:00:00"), // 默认当天开始时间
   // svn log -r {}:{} 结束时间
-  svnEndDayTime: undefined // moment().format("YYYY-MM-DD 23:59:59"), // 默认当天结束时间
+  svnEndDayTime: undefined, // moment().format("YYYY-MM-DD 23:59:59"), // 默认当天结束时间
 }
 
 Object.assign(config, program);
@@ -82,7 +87,11 @@ if (!config.noConfig) {
   }
 }
 
+// 输出日志的内容
+let logStr = ''
+
 function log (...arg) {
+  logStr += format(...arg).replace(/\[\d+m/g, "") + '\n'
   console.log(...arg)
 }
 
@@ -115,6 +124,14 @@ function printLog (ret) {
 async function run () {
   const ret = await statsvn.run(config)
   printLog(ret)
+
+  if (config.outDir) {
+    fs.writeFileSync(path.resolve(config.outDir, "output.txt"), logStr)
+  }
+
+  if (config.debug) {
+    fs.writeFileSync(path.resolve(config.cwd, "./statsvn-debug-return-log.json"), JSON.stringify(ret, null, 2))
+  }
 }
 
 run ()
