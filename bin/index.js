@@ -29,15 +29,18 @@ program.cwd = 'G:\\SvnWorkspaces\\20220629-inc-inc-emb-trunk-yr'
 const config = {
   // 工作目录
   cwd: ".",
-  // 根目录，国际文本所在的根目录
+  // 根目录，svn所在的根目录
   rootDir: ".",
   // 配置文件的路径，没有配置，默认路径是在${cwd}/vve-i18n-cli.config.js
   config: undefined,
   // 是否取配置文件
   noConfig: false,
   outDir: 'outdir',
-  // svn项目，如果传数组，则优先级比cwd更高
+  // svn项目，如果传数组，则优先级比cwd和subSvnPaths更高，则不统计当前svn目录${cwd}/${rootDir}
   svnProjectPaths: [],
+  // 仅统计项目下subSvnPaths指定的svn目录
+  subSvnPaths: [],
+  // 忽略的路径
   ingorePaths: [
     'eweb/**',
     '**/dist/**',

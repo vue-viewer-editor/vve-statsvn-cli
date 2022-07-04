@@ -81,7 +81,7 @@ async function runSingle (options) {
         spaces: 4
       })
 
-      fs.writeFileSync("./aa.json", JSON.stringify(xmlResult))
+      // fs.writeFileSync("./aa.json", JSON.stringify(xmlResult))
 
       if (!xmlResult.log.logentry) {
         xmlResult.log.logentry = []
@@ -149,14 +149,23 @@ async function run (options) {
   if (!config.svnProjectPaths.length) {
     return await runSingle(config)
   } else {
+    // 返回信息
+    const ret = {
+      total: 0, // 总和
+      arr: [],
+    }
+
     const arr = []
     for (let i = 0; i < config.svnProjectPaths.length; i++) {
-      const ret = await runSingle(Object.assign({}, config, {
+      const singleRet = await runSingle(Object.assign({}, config, {
         cwd: config.svnProjectPaths[0]
       }))
-      arr.push(ret)
+      arr.push(singleRet)
+
     }
-    return arr
+    ret.total = arr.reduce((val, item) => val + item.total, 0)
+    ret.arr = arr
+    return ret
   }
 }
 
