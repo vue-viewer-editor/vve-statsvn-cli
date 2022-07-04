@@ -127,7 +127,7 @@ function printLogSingleProject (ret, { projectInfo = false } = {}) {
       log(`本地路径：${chalk.blue(config.cwd)}`)
     }
   }
-  log(`SVN路径：${chalk.blue(config.svnInfo.url)}`)
+  log(`SVN路径：${chalk.blue(ret.svnInfo.url)}`)
   log(`新增代码总行数: ${chalk.blue('%d')}`, ret.total);
   log(chalk.green("---end-----------------------"))
 }

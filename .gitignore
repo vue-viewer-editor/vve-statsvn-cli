@@ -62,6 +62,6 @@ typings/
 
 package-lock.json
 statsvn-debug-return-log.json
-statsvn-debug-svn-log.json
-output.txt
+statsvn-output.txt
+statsvnTmp
 /vve-statsvn-cli.config.js
