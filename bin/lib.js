@@ -115,8 +115,6 @@ async function run (options) {
       }
     }
   }
-  console.log(ret.total)
-  console.log(ret.paths.map(item => item.path + ' ' + item.lineTotal).join('\n'))
   return ret
 }
 
