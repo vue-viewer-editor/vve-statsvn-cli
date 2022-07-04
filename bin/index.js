@@ -65,7 +65,13 @@ const config = {
   subSvnPaths: [],
   // 忽略的路径
   ingorePaths: [
-    '**/node_modules/**'
+    'npm-shrinkwrap.json',
+    '**/dist/**',
+    'dist/**',
+    '**/node_module/**',
+    'node_module/**',
+    '**/*.jpg', '**/*.jpeg', '**/*.png', '**/*.svg', '**/*.eot', '**/*.ttf', '**/*.woff', '**/*.woff2', '**/*.gif',
+    '*.jpg', '*.jpeg', '*.png', '*.svg', '*.eot', '*.ttf', '*.woff', '*.woff2', '*.gif',
   ],
   // svn log -r 参数（优先于svnStartDayTime和svnEndDayTime使用）
   svnRevisionARG: '',
