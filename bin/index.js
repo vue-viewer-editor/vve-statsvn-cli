@@ -122,11 +122,12 @@ function printLogSingleProject (ret, { projectInfo = false } = {}) {
 
   if (projectInfo) {
     if (config.alias) {
-      log(`路径：${chalk.blue(config.alias + "（" + config.cwd + "）")}`)
+      log(`本地路径：${chalk.blue(config.alias + "（" + config.cwd + "）")}`)
     } else {
-      log(`路径：${chalk.blue(config.cwd)}`)
+      log(`本地路径：${chalk.blue(config.cwd)}`)
     }
   }
+  log(`SVN路径：${chalk.blue(config.svnInfo.url)}`)
   log(`新增代码总行数: ${chalk.blue('%d')}`, ret.total);
   log(chalk.green("---end-----------------------"))
 }

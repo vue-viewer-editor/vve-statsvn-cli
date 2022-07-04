@@ -54,6 +54,7 @@ async function runSingle (options) {
     failPaths: [], // { path: '' }
     ingorePaths: [], // { path: '', err: '' }
     overMaxLineThresholdPaths: [], // { path: '' }
+    svnInfo: {}, // { url: '' }
   }
 
   // 创建缓存目录
@@ -110,6 +111,8 @@ async function runSingle (options) {
   if (!infoResult.err) {
     const svnUrl = infoResult.data.url
     const relativeUrl = infoResult.data['relative-url']
+
+    ret.svnInfo = infoResult.data
 
     let logResult = await clientCmd(client, ['log', '-r', config.svnRevisionARG, '--xml', '-v'])
 
