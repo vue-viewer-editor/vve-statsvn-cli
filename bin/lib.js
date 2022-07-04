@@ -57,7 +57,7 @@ async function runSingle (options) {
   }
 
   var client = new Client({
-    cwd: config.cwd, // 项目路径
+    cwd: path.resolve(config.cwd), // 项目路径
     // username: 'username', // optional if authentication not required or is already saved
     // password: 'password', // optional if authentication not required or is already saved
     // noAuthCache: true, // optional, if true, username does not become the logged in user on the machine
@@ -141,31 +141,52 @@ async function runSingle (options) {
  * }
  * @returns 
  */
+async function runMore (options) {
+
+  const config = Object.assign({}, options)
+
+  const ret = {
+    total: 0, // 总和
+    arr: [],
+  }
+
+  const arr = []
+  for (let i = 0; i < config.svnProjectPaths.length; i++) {
+    // 规格化，['path'] => [{cwd: 'path'}]
+    let item = config.svnProjectPaths[0]
+    if (typeof item !== 'object') {
+      item = { cwd: item }
+    }
+    const singleRet = await runSingle(Object.assign({}, config, item))
+    arr.push(singleRet)
+  }
+  ret.total = arr.reduce((val, item) => val + item.total, 0)
+  ret.arr = arr
+  return ret
+}
+
+/**
+ * 单个svn项目
+ * @param {*} options = {
+ *    svnProjectPaths: [], // D:/svnProject
+ *    subSvnPaths: [], // ['auth', 'base', 'config']
+ * }
+ * @returns 
+ */
 async function run (options) {
   const config = Object.assign({}, options, {
     svnProjectPaths: [],
   })
 
-  if (!config.svnProjectPaths.length) {
-    return await runSingle(config)
+  if (config.svnProjectPaths.length) {
+    return await runMore(config)
+  } else if (config.subSvnPaths.length) {
+    config.svnProjectPath = config.subSvnPaths.map(item => {
+      return path.resolve(config.cwd, item)
+    })
+    return await runMore(config)
   } else {
-    // 返回信息
-    const ret = {
-      total: 0, // 总和
-      arr: [],
-    }
-
-    const arr = []
-    for (let i = 0; i < config.svnProjectPaths.length; i++) {
-      const singleRet = await runSingle(Object.assign({}, config, {
-        cwd: config.svnProjectPaths[0]
-      }))
-      arr.push(singleRet)
-
-    }
-    ret.total = arr.reduce((val, item) => val + item.total, 0)
-    ret.arr = arr
-    return ret
+    return await runSingle(config)
   }
 }
 

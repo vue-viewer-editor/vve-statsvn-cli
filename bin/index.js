@@ -68,13 +68,6 @@ if (!config.noConfig) {
   }
 }
 
-// 制定配置文件后，cwd在配置文件中定义，则cwd就需要重新获取
-if (!program.cwd) {
-  absoluteCwd = path.resolve(config.cwd);
-}
-
-const absoluteRootDir = path.resolve(absoluteCwd, config.rootDir);
-
 async function run () {
   const ret = await statsvn.run(config)
   console.log(ret.total)
