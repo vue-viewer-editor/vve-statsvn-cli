@@ -36,6 +36,8 @@ const config = {
   // 是否取配置文件
   noConfig: false,
   outDir: 'outdir',
+  // svn项目，如果传数组，则优先级比cwd更高
+  svnProjectPaths: [],
   ingorePaths: [
     'eweb/**',
     '**/dist/**',

@@ -34,16 +34,16 @@ function clientCmd (client, arr) {
 }
 
 /**
- * 
+ * 单个svn项目
  * @param {*} options = {
- *    ingorePaths: [], // [**/node_modules/**]
+ *    ingorePaths: [],
  *    svnRevisionARG: '{2022-05-20 00:00:00}:{2022-05-20 23:59:59}', // 具体通过看svn log -h查看-r的参数格式
  *    svnStartDayTime: '', 2022-05-20 00:00:00 // 只有在svnRevisionARG为空的情况下使用
  *    svnEndDayTime: '', // 2022-05-20 23:59:59 // 只有在svnRevisionARG为空的情况下使用
  * }
  * @returns 
  */
-async function run (options) {
+async function runSingle (options) {
 
   const config = Object.assign({}, options, {
     ingorePaths: [],
@@ -81,9 +81,11 @@ async function run (options) {
         spaces: 4
       })
 
-      // fs.writeFileSync("./aa.json", JSON.stringify(xmlResult))
+      fs.writeFileSync("./aa.json", JSON.stringify(xmlResult))
 
-      if (!Array.isArray(xmlResult.log.logentry)) {
+      if (!xmlResult.log.logentry) {
+        xmlResult.log.logentry = []
+      } else if (!Array.isArray(xmlResult.log.logentry)) {
         xmlResult.log.logentry = [xmlResult.log.logentry]
       }
 
@@ -132,6 +134,33 @@ async function run (options) {
   return ret
 }
 
+/**
+ * 单个svn项目
+ * @param {*} options = {
+ *    svnProjectPaths: [], // D:/svnProject
+ * }
+ * @returns 
+ */
+async function run (options) {
+  const config = Object.assign({}, options, {
+    svnProjectPaths: [],
+  })
+
+  if (!config.svnProjectPaths.length) {
+    return await runSingle(config)
+  } else {
+    const arr = []
+    for (let i = 0; i < config.svnProjectPaths.length; i++) {
+      const ret = await runSingle(Object.assign({}, config, {
+        cwd: config.svnProjectPaths[0]
+      }))
+      arr.push(ret)
+    }
+    return arr
+  }
+}
+
 module.exports = {
+  runSingle,
   run,
 }
