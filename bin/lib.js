@@ -162,7 +162,7 @@ async function runMore (options) {
   const arr = []
   for (let i = 0; i < config.svnProjectPaths.length; i++) {
     // 规格化，['path'] => [{cwd: 'path'}]
-    let item = config.svnProjectPaths[0]
+    let item = config.svnProjectPaths[i]
     if (typeof item !== 'object') {
       item = { cwd: item }
     }
