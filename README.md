@@ -28,8 +28,6 @@ $ npm install vve-statsvn-cli
 
 然后 `npm run statsvn`
 
-建议使用powershell，不建议用cmd，cmd在数据量大的时候会因为日志无法打印而卡主
-
 ## 参数
 
 ### 命令行指定参数
