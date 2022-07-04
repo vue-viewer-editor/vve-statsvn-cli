@@ -7,6 +7,7 @@ var convert = require('xml-js');
 var fs = require('fs');
 var minimatch = require("minimatch")
 var path = require('path')
+var moment = require('moment')
 
 // promise方法
 function clientGetInfo (client) {
@@ -32,15 +33,28 @@ function clientCmd (client, arr) {
   })
 }
 
-const DEFAULT_IGNORE_PATHS = [
-  '**/node_modules/**'
-]
-
+/**
+ * 
+ * @param {*} options = {
+ *    ingorePaths: [], // [**/node_modules/**]
+ *    svnRevisionARG: '{2022-05-20 00:00:00}:{2022-05-20 23:59:59}', // 具体通过看svn log -h查看-r的参数格式
+ *    svnStartDayTime: '', 2022-05-20 00:00:00 // 只有在svnRevisionARG为空的情况下使用
+ *    svnEndDayTime: '', // 2022-05-20 23:59:59 // 只有在svnRevisionARG为空的情况下使用
+ * }
+ * @returns 
+ */
 async function run (options) {
 
   const config = Object.assign({}, options, {
-    ingorePaths: DEFAULT_IGNORE_PATHS,
+    ingorePaths: [],
+    svnRevisionARG: '',
+    svnStartDayTime: moment().format("YYYY-MM-DD 00:00:00"), // 默认当天
+    svnEndDayTime: moment().format("YYYY-MM-DD 23:59:59"),
   })
+
+  if (!config.svnRevisionARG) {
+    config.svnRevisionARG = `{${config.svnStartDayTime}}:{${config.svnEndDayTime}}`
+  }
 
   var client = new Client({
     cwd: config.cwd, // 项目路径
@@ -60,7 +74,7 @@ async function run (options) {
   if (!infoResult.err) {
     const svnUrl = infoResult.data.url
     const relativeUrl = infoResult.data['relative-url']
-    const logResult = await clientCmd(client, ['log', '-r', '{2022-04-26 00:00:00}:{2022-04-27 23:59:59}', '--xml', '-v'])
+    const logResult = await clientCmd(client, ['log', '-r', config.svnRevisionARG, '--xml', '-v'])
     if (!logResult.err) {
       const xmlResult = convert.xml2js(logResult.data, {
         compact: true,

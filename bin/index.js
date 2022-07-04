@@ -70,7 +70,6 @@ if (!program.cwd) {
 
 const absoluteRootDir = path.resolve(absoluteCwd, config.rootDir);
 
-
 async function run () {
   const ret = await statsvn.run(config)
   console.log(ret.total)
