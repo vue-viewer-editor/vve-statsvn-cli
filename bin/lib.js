@@ -4,37 +4,16 @@
 
 var Client = require('svn-spawn')
 var convert = require('xml-js');
-var fs = require('fs');
+var fs = require('fs-extra');
 var Util = require('./utils')
 var minimatch = require("minimatch")
 var path = require('path')
-var moment = require('moment')
+var moment = require('moment');
+const { info } = require('console');
 
 var fsExistsSync = Util.fsExistsSync
 
-// promise方法
-function clientGetInfo (client) {
-  return new Promise((resolve) => {
-    client.getInfo(function (err, data) {
-      resolve({
-        err,
-        data
-      })
-    })
-  })
-}
 
-// cmd方法
-function clientCmd (client, arr) {
-  return new Promise((resolve) => {
-    client.cmd(arr, function (err, data) {
-      resolve({
-        err,
-        data
-      })
-    })
-  })
-}
 
 /**
  * 单个svn项目
@@ -54,6 +33,7 @@ async function runSingle (options) {
     svnStartDayTime: moment().format("YYYY-MM-DD 00:00:00"), // 默认当天
     svnEndDayTime: moment().format("YYYY-MM-DD 23:59:59"),
     maxLineThreshold: 0, // 最大行数阈值，如果一个文件超过最大行数，则不处理他的新增行数信息 0代表不限制
+    delTmpAfterRunSingle: false, // 执行完单个删除临时文件
   }, options)
 
   if (!config.svnRevisionARG) {
@@ -73,6 +53,7 @@ async function runSingle (options) {
     paths: [], // { path: '', lineTotal: 0 }
     failPaths: [], // { path: '' }
     ingorePaths: [], // { path: '', err: '' }
+    overMaxLineThresholdPaths: [], // { path: '' }
   }
 
   // 创建缓存目录
@@ -81,20 +62,64 @@ async function runSingle (options) {
     fs.mkdirSync(statsvnTmpDir)
   }
 
+  // promise方法
+  function clientGetInfo (client) {
+    const tmpFilePath = path.resolve(statsvnTmpDir, `svn-info.json`)
+    return new Promise((resolve) => {
+
+      if (!fsExistsSync(tmpFilePath)) {
+        client.getInfo(function (err, data) {
+          const result = {
+            err,
+            data
+          }
+          fs.mkdirsSync(tmpFilePath.dirname())
+          fs.writeFileSync(tmpFilePath, JSON.stringify(result))
+          resolve(result)
+        })
+      } else {
+        const result = JSON.parse(fs.readFileSync(tmpFilePath).toString())
+        resolve(result)
+      }
+    })
+  }
+
+  // cmd方法
+  function clientCmd (client, arr) {
+    const tmpFilePath = path.resolve(statsvnTmpDir, `${arr.join('#').replace(/:/g, "")}`)
+
+    return new Promise((resolve) => {
+      if (!fsExistsSync(tmpFilePath)) {
+        client.cmd(arr, function (err, data) {
+          const result = {
+            err,
+            data
+          }
+          fs.mkdirsSync(tmpFilePath.dirname())
+          fs.writeFileSync(tmpFilePath, JSON.stringify(result))
+          resolve(result)
+        })
+      } else {
+        const result = JSON.parse(fs.readFileSync(tmpFilePath).toString())
+        resolve(result)
+      }
+    })
+  }
+
   var infoResult = await clientGetInfo(client)
   if (!infoResult.err) {
     const svnUrl = infoResult.data.url
     const relativeUrl = infoResult.data['relative-url']
-    const logResult = await clientCmd(client, ['log', '-r', config.svnRevisionARG, '--xml', '-v'])
+
+    let logResult = await clientCmd(client, ['log', '-r', config.svnRevisionARG, '--xml', '-v'])
+
     if (!logResult.err) {
       const xmlResult = convert.xml2js(logResult.data, {
         compact: true,
         spaces: 4
       })
 
-      if (config.debug) {
-        fs.writeFileSync(path.resolve(config.cwd, "./statsvn-debug-svn-log.json"), JSON.stringify(xmlResult, null, 2))
-      }
+      fs.writeFileSync(path.resolve(statsvnTmpDir, `./svn-log-${config.svnRevisionARG.replace(/:/g, "")}.json`), JSON.stringify(xmlResult, null, 2))
 
       if (!xmlResult.log.logentry) {
         xmlResult.log.logentry = []
@@ -124,21 +149,13 @@ async function runSingle (options) {
             if (config.ingorePaths.reduce((val, item) => !minimatch(filePath, item) && val, true) 
               && fileItem._attributes.action !== 'D' && fileItem._attributes.kind === 'file' ) {
 
-              const tmpFilePath = path.resolve(statsvnTmpDir, `diff-${version}-${filePath.replace(/\//g, "-")}`)
-
+              const tmpFilePath = path.resolve(statsvnTmpDir, `diff/${version}/${filePath}`)
+              
               // diff比较
-              let diffResult = ''
-              if (!fsExistsSync(tmpFilePath)) {
-                diffResult = await clientCmd(client, ['diff', '-c', version, filePath])
-                fs.writeFileSync(tmpFilePath, JSON.stringify(diffResult))
-              } else {
-                diffResult = JSON.parse(fs.readFileSync(tmpFilePath).toString())
-              }
+              let diffResult = await clientCmd(client, ['diff', '-c', version, filePath])
 
               if (diffResult.err) {
                 ret.failPaths.push({ path: filePath, err: diffResult.err })
-              } else if (config.maxLineThreshold && diffResult.data.split("\n").length > config.maxLineThreshold)  {
-                ret.ingorePaths.push({ path: filePath })
               } else {
                 // grep "^+" ./tmplate|grep -v "^+++"|sed 's/^.//'|sed '/^$/d'|wc -l
                 // 以^+开头，但不已+++，且不已空行开头，不已注释开头（这里实际允许注释//开头）
@@ -147,9 +164,12 @@ async function runSingle (options) {
                   return item.startsWith('+') && !item.startsWith("+++") && !!item.trim()
                 })
 
-                ret.paths.push({ path: filePath, lineTotal: validArr.length })
-
-                ret.total += validArr.length
+                if (config.maxLineThreshold && validArr.length > config.maxLineThreshold) {
+                  ret.overMaxLineThresholdPaths.push({ path: filePath })
+                } else {
+                  ret.paths.push({ path: filePath, lineTotal: validArr.length })
+                  ret.total += validArr.length
+                }
               }
             } else {
               ret.ingorePaths.push({ path: filePath })
@@ -161,6 +181,13 @@ async function runSingle (options) {
       }
     }
   }
+
+  fs.writeFileSync(path.resolve(statsvnTmpDir, `./svn-statsvn-${config.svnRevisionARG.replace(/:/g, "")}.json`), JSON.stringify(ret, null, 2))
+
+  if (config.delTmpAfterRunSingle) {
+    fs.removeSync(statsvnTmpDir)
+  }
+
   return ret
 }
 

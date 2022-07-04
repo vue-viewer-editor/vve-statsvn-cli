@@ -71,6 +71,8 @@ const config = {
   svnEndDayTime: undefined, // moment().format("YYYY-MM-DD 23:59:59"), // 默认当天结束时间
   // 最大行数阈值，如果一个文件超过最大行数，则不处理他的新增行数信息 0代表不限制
   maxLineThreshold: 0,
+  // 统计完一个svn项目的删除临时目录
+  delTmpAfterRunSingle: false,
 }
 
 Object.assign(config, program);
@@ -134,7 +136,7 @@ async function run () {
   printLog(ret)
 
   if (config.outDir) {
-    fs.writeFileSync(path.resolve(config.outDir, "output.txt"), logStr)
+    fs.writeFileSync(path.resolve(config.outDir, "statsvn-output.txt"), logStr)
   }
 
   if (config.debug) {
