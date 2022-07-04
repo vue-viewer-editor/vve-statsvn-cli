@@ -5,7 +5,7 @@ module.exports = {
     '**/node_module/**'
   ],
   svnProjectPaths: [
-    { path: 'G:\\SvnWorkspaces\\20220629-inc-inc-emb-trunk-yr', alias: 'aaa' },
-  ] 
+    { cwd: 'G:/SvnWorkspaces/20220629-inc-inc-emb-trunk-yr', alias: 'aaa' },
+  ],
   outDir: '.'
 }
