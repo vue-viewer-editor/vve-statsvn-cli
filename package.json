@@ -1,16 +1,21 @@
 {
   "name": "vve-statsvn",
   "version": "1.0.0",
-  "description": "",
+  "description": "node state svn",
   "scripts": {
-    "start": "node ./bin/index.js"
+    "start": "node ./bin/index.js",
+    "test": "nyc --reporter=lcov mocha test/unit",
+    "release": "standard-version"
   },
-  "bin": {},
+  "bin": {
+    "vve-statsvn-cli": "./bin/index.js"
+  },
   "files": [
     "bin"
   ],
   "repository": {
-    "type": "git"
+    "type": "git",
+    "url": "git+https://github.com/vue-viewer-editor/vve-statsvn-cli.git"
   },
   "keywords": [
     "vve",
@@ -20,7 +25,10 @@
   ],
   "author": "nianqin",
   "license": "MIT",
-  "bugs": {},
+  "bugs": {
+    "url": "https://github.com/vue-viewer-editor/vve-statsvn-cli/issues"
+  },
+  "homepage": "https://github.com/vue-viewer-editor/vve-statsvn-cli#readme",
   "dependencies": {
     "chalk": "^4.1.2",
     "commander": "^3.0.2",
