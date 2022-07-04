@@ -115,7 +115,7 @@ async function runSingle (options) {
               const diffResult = await clientCmd(client, ['diff', '-c', version, filePath])
               if (diffResult.err) {
                 ret.failPaths.push({ path: filePath, err: diffResult.err })
-              } else if (config.maxLineThreshold && diffResult.data.length > config.maxLineThreshold)  {
+              } else if (config.maxLineThreshold && diffResult.data.split("\n").length > config.maxLineThreshold)  {
                 ret.ingorePaths.push({ path: filePath })
               } else {
                 // grep "^+" ./tmplate|grep -v "^+++"|sed 's/^.//'|sed '/^$/d'|wc -l
