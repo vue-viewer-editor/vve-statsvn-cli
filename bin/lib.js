@@ -128,7 +128,7 @@ async function runSingle (options) {
 
               // diff比较
               let diffResult = ''
-              if (fsExistsSync(statsvnTmpDir)) {
+              if (!fsExistsSync(tmpFilePath)) {
                 diffResult = await clientCmd(client, ['diff', '-c', version, filePath])
                 fs.writeFileSync(tmpFilePath, JSON.stringify(diffResult))
               } else {
