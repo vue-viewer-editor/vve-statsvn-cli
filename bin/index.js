@@ -4,6 +4,7 @@
 const program = require("commander");
 const fs = require("fs");
 var path = require('path')
+const { loadConfig } = require("./configuration");
 var statsvn = require('./lib')
 var chalk = require('chalk')
 var format = require('format')
