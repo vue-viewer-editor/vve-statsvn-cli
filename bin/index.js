@@ -32,6 +32,22 @@ program
     commaSeparatedList
   )
   .option(
+    "--author <name>",
+    "作者"
+  )
+  .option(
+    "--svn-revision-arg <name>",
+    "svn log -r 参数（优先于svnStartDayTime和svnEndDayTime使用）"
+  )
+  .option(
+    "--svn-start-day-time <name>",
+    "svn log -r {}:{} 开始时间"
+  )
+  .option(
+    "--svn-end-day-time <name>",
+    "svn log -r {}:{} 结束时间"
+  )
+  .option(
     "--max-line-threshold <number>",
     "最大行数阈值，如果一个文件超过最大行数，则不处理他的新增行数信息 0代表不限制"
   )
@@ -75,6 +91,8 @@ const config = {
     '**/*.jpg', '**/*.jpeg', '**/*.png', '**/*.svg', '**/*.eot', '**/*.ttf', '**/*.woff', '**/*.woff2', '**/*.gif',
     '*.jpg', '*.jpeg', '*.png', '*.svg', '*.eot', '*.ttf', '*.woff', '*.woff2', '*.gif',
   ],
+  // author 作者
+  author: '',
   // svn log -r 参数（优先于svnStartDayTime和svnEndDayTime使用）
   svnRevisionARG: '',
   // svn log -r {}:{} 开始时间

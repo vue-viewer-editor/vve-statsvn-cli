@@ -29,6 +29,7 @@ async function runSingle (options) {
 
   const config = Object.assign({
     ingorePaths: [],
+    author: '',
     svnRevisionARG: '',
     svnStartDayTime: moment().format("YYYY-MM-DD 00:00:00"), // 默认当天
     svnEndDayTime: moment().format("YYYY-MM-DD 23:59:59"),
@@ -136,6 +137,13 @@ async function runSingle (options) {
         }
 
         const version = item._attributes.revision
+
+        const author = item.author && item.author._text
+
+        // 有配置作者，则过滤作者
+        if (config.author && config.author !== author) {
+          continue;
+        }
 
         for (fileItem of item.paths.path) {
           let filePath = ''

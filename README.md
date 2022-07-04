@@ -52,6 +52,30 @@ program
     "忽略的路径，满足minimatch规范，用逗号隔开",
     commaSeparatedList
   )
+  .option(
+    "--author <name>",
+    "作者"
+  )
+  .option(
+    "--svn-revision-arg <name>",
+    "svn log -r 参数（优先于svnStartDayTime和svnEndDayTime使用）"
+  )
+  .option(
+    "--svn-start-day-time <name>",
+    "svn log -r {}:{} 开始时间"
+  )
+  .option(
+    "--svn-end-day-time <name>",
+    "svn log -r {}:{} 结束时间"
+  )
+  .option(
+    "--max-line-threshold <number>",
+    "最大行数阈值，如果一个文件超过最大行数，则不处理他的新增行数信息 0代表不限制"
+  )
+  .option(
+    "--del-tmp-after-run-single",
+    "统计完一个svn项目的删除临时目录"
+  )
   .option("--debug", "是否开启debug")
   .option("--out-dir <path>", "输出目录")
   .option(
@@ -60,6 +84,7 @@ program
   )
   .option("--no-config", "是否取配置文件")
   .parse(process.argv);
+
 ```
 
 ### 配置文件指定参数
@@ -92,14 +117,28 @@ const config = {
   subSvnPaths: [],
   // 忽略的路径
   ingorePaths: [
-    '**/node_modules/**'
+    'npm-shrinkwrap.json',
+    '**/dist/**',
+    'dist/**',
+    '**/node_module/**',
+    'node_module/**',
+    '*.gz',
+    '**/*.gz',
+    '**/*.jpg', '**/*.jpeg', '**/*.png', '**/*.svg', '**/*.eot', '**/*.ttf', '**/*.woff', '**/*.woff2', '**/*.gif',
+    '*.jpg', '*.jpeg', '*.png', '*.svg', '*.eot', '*.ttf', '*.woff', '*.woff2', '*.gif',
   ],
+  // author 作者
+  author: '',
   // svn log -r 参数（优先于svnStartDayTime和svnEndDayTime使用）
   svnRevisionARG: '',
   // svn log -r {}:{} 开始时间
   svnStartDayTime: undefined, // moment().format("YYYY-MM-DD 00:00:00"), // 默认当天开始时间
   // svn log -r {}:{} 结束时间
   svnEndDayTime: undefined, // moment().format("YYYY-MM-DD 23:59:59"), // 默认当天结束时间
+  // 最大行数阈值，如果一个文件超过最大行数，则不处理他的新增行数信息 0代表不限制
+  maxLineThreshold: 0,
+  // 统计完一个svn项目的删除临时目录
+  delTmpAfterRunSingle: false,
 }
 ```
 
