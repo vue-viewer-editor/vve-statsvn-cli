@@ -33,9 +33,7 @@ function clientCmd (client, arr) {
 }
 
 const DEFAULT_IGNORE_PATHS = [
-  'eweb/**',
-  '**/dist/**',
-  '**/node_module/**'
+  '**/node_modules/**'
 ]
 
 async function run (options) {
@@ -44,10 +42,8 @@ async function run (options) {
     ingorePaths: DEFAULT_IGNORE_PATHS,
   })
 
-  const projectPath = 'G:\\SvnWorkspaces\\20220629-inc-inc-emb-trunk-yr'
-
   var client = new Client({
-    cwd: projectPath,
+    cwd: config.cwd, // 项目路径
     // username: 'username', // optional if authentication not required or is already saved
     // password: 'password', // optional if authentication not required or is already saved
     // noAuthCache: true, // optional, if true, username does not become the logged in user on the machine
@@ -64,7 +60,7 @@ async function run (options) {
   if (!infoResult.err) {
     const svnUrl = infoResult.data.url
     const relativeUrl = infoResult.data['relative-url']
-    const logResult = await clientCmd(client, ['log', '-r', '{2022-04-26 00:00:00}:{2022-12-30 23:59:59}', '--xml', '-v'])
+    const logResult = await clientCmd(client, ['log', '-r', '{2022-04-26 00:00:00}:{2022-04-27 23:59:59}', '--xml', '-v'])
     if (!logResult.err) {
       const xmlResult = convert.xml2js(logResult.data, {
         compact: true,
@@ -121,6 +117,7 @@ async function run (options) {
   }
   console.log(ret.total)
   console.log(ret.paths.map(item => item.path + ' ' + item.lineTotal).join('\n'))
+  return ret
 }
 
 module.exports = {
