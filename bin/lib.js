@@ -178,9 +178,7 @@ async function runMore (options) {
  * @returns 
  */
 async function run (options) {
-  const config = Object.assign({}, options, {
-    svnProjectPaths: [],
-  })
+  const config = Object.assign({}, options)
 
   if (config.svnProjectPaths.length) {
     return await runMore(config)
