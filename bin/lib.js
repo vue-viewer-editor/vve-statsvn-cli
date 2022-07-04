@@ -75,7 +75,7 @@ async function runSingle (options) {
             data
           }
           fs.mkdirsSync(path.dirname(tmpFilePath))
-          fs.writeFileSync(tmpFilePath, JSON.stringify(result))
+          fs.writeFileSync(tmpFilePath, JSON.stringify(result, null, 2))
           resolve(result)
         })
       } else {
