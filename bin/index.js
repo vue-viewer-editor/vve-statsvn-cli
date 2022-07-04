@@ -35,6 +35,10 @@ program
     "--max-line-threshold <number>",
     "最大行数阈值，如果一个文件超过最大行数，则不处理他的新增行数信息 0代表不限制"
   )
+  .option(
+    "--del-tmp-after-run-single",
+    "统计完一个svn项目的删除临时目录"
+  )
   .option("--debug", "是否开启debug")
   .option("--out-dir <path>", "输出目录")
   .option(
