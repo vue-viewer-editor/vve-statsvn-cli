@@ -11,13 +11,22 @@ function commaSeparatedList(value, split = ",") {
 program
   .version(require('../package.json').version)
   .option("--cwd <path>", "工作目录")
-  .option("--root-dir <path>", "国际文本所在的根目录")
   .option(
-    "--module-index-rules <items>",
-    "模块入口列表",
+    "--svn-project-paths <items>",
+    "多项目svn的完整路径，用逗号隔开",
     commaSeparatedList
   )
-  .option("--out-dir <path>", "生成的国际化资源包的输出目录")
+  .option(
+    "--sub-svn-paths <items>",
+    "单项目多SVN路径，使用相对路径，用逗号隔开",
+    commaSeparatedList
+  )
+  .option(
+    "--ingore-paths <items>",
+    "忽略的路径，满足minimatch规范，用逗号隔开",
+    commaSeparatedList
+  )
+  .option("--out-dir <path>", "输出目录")
   .option(
     "--config <path>",
     "配置文件的路径，没有配置，默认路径是在${cwd}/vve-i18n-cli.config.js"
@@ -30,8 +39,6 @@ program.cwd = 'G:\\SvnWorkspaces\\20220629-inc-inc-emb-trunk-yr'
 const config = {
   // 工作目录
   cwd: ".",
-  // 根目录，svn所在的根目录
-  rootDir: ".",
   // 配置文件的路径，没有配置，默认路径是在${cwd}/vve-i18n-cli.config.js
   config: undefined,
   // 是否取配置文件
@@ -46,7 +53,13 @@ const config = {
     'eweb/**',
     '**/dist/**',
     '**/node_module/**'
-  ]
+  ],
+  // svn log -r 参数（优先于svnStartDayTime和svnEndDayTime使用）
+  svnRevisionARG: '',
+  // svn log -r {}:{} 开始时间
+  svnStartDayTime: undefined, // moment().format("YYYY-MM-DD 00:00:00"), // 默认当天开始时间
+  // svn log -r {}:{} 结束时间
+  svnEndDayTime: undefined // moment().format("YYYY-MM-DD 23:59:59"), // 默认当天结束时间
 }
 
 Object.assign(config, program);
@@ -69,7 +82,9 @@ if (!config.noConfig) {
   }
 }
 
-const log = console.log;
+function log (...arg) {
+  console.log(...arg)
+}
 
 function printLogSingleProject (ret, { projectInfo = false } = {}) {
   const config = ret.config
