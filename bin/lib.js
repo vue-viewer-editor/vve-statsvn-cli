@@ -101,9 +101,13 @@ async function runSingle (options) {
         const version = item._attributes.revision
 
         for (fileItem of item.paths.path) {
-          let filePath = fileItem._text.replace(new RegExp(relativeUrl), "")
+          let filePath = ''
 
-         
+          // 如果匹配不上，代表不是这个分支，故不处理，todo 怎样直接在svn导出直接过滤
+          if (new RegExp(relativeUrl).test(fileItem._text)) {
+            filePath = fileItem._text.replace(new RegExp(relativeUrl), "")
+          }
+
           if (filePath) {
             filePath = filePath.slice(1) // 去除第一个/
 
