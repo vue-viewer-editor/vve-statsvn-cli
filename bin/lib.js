@@ -50,6 +50,7 @@ async function runSingle (options) {
     svnRevisionARG: '',
     svnStartDayTime: moment().format("YYYY-MM-DD 00:00:00"), // 默认当天
     svnEndDayTime: moment().format("YYYY-MM-DD 23:59:59"),
+    maxLineThreshold: 0, // 最大行数阈值，如果一个文件超过最大行数，则不处理他的新增行数信息 0代表不限制
   }, options)
 
   if (!config.svnRevisionARG) {
@@ -110,7 +111,7 @@ async function runSingle (options) {
 
               // diff比较
               const diffResult = await clientCmd(client, ['diff', '-c', version, filePath])
-              if (!diffResult.err && diffResult.data.length <= 5000) {
+              if (!diffResult.err && diffResult.data.length <= config.maxLineThreshold) {
 
                 // grep "^+" ./tmplate|grep -v "^+++"|sed 's/^.//'|sed '/^$/d'|wc -l
                 // 以^+开头，但不已+++，且不已空行开头，不已注释开头（这里实际允许注释//开头）

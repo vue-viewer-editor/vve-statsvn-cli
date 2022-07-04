@@ -31,6 +31,10 @@ program
     "忽略的路径，满足minimatch规范，用逗号隔开",
     commaSeparatedList
   )
+  .option(
+    "--max-line-threshold <number>",
+    "最大行数阈值，如果一个文件超过最大行数，则不处理他的新增行数信息 0代表不限制"
+  )
   .option("--debug", "是否开启debug")
   .option("--out-dir <path>", "输出目录")
   .option(
@@ -65,6 +69,8 @@ const config = {
   svnStartDayTime: undefined, // moment().format("YYYY-MM-DD 00:00:00"), // 默认当天开始时间
   // svn log -r {}:{} 结束时间
   svnEndDayTime: undefined, // moment().format("YYYY-MM-DD 23:59:59"), // 默认当天结束时间
+  // 最大行数阈值，如果一个文件超过最大行数，则不处理他的新增行数信息 0代表不限制
+  maxLineThreshold: 0,
 }
 
 Object.assign(config, program);
