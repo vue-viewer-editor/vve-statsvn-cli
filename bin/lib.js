@@ -248,7 +248,7 @@ async function run (options) {
   if (config.svnProjectPaths.length) {
     return await runMore(config)
   } else if (config.subSvnPaths.length) {
-    config.svnProjectPath = config.subSvnPaths.map(item => {
+    config.svnProjectPaths = config.subSvnPaths.map(item => {
       return path.resolve(config.cwd, item)
     })
     return await runMore(config)
