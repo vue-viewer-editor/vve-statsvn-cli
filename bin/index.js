@@ -8,6 +8,7 @@ const { loadConfig } = require("./configuration");
 var statsvn = require('./lib')
 var chalk = require('chalk')
 var format = require('format')
+const ObjectsToCsv = require('objects-to-csv');
 
 function commaSeparatedList(value, split = ",") {
   return value.split(split).filter(item => item);
@@ -57,6 +58,7 @@ program
   )
   .option("--debug", "是否开启debug")
   .option("--out-dir <path>", "输出目录")
+  .option("--out-csv", "是否输出csv")
   .option(
     "--config <path>",
     "配置文件的路径，没有配置，默认路径是在${cwd}/vve-statsvn-cli.config.js"
@@ -73,6 +75,8 @@ const config = {
   noConfig: false,
   // 输出的目录
   outDir: '',
+  // 是否输出csv文件
+  outCsv: false,
   // 是否开启debug
   debug: false,
   // svn项目，如果传数组，则优先级比cwd和subSvnPaths更高，则不统计当前svn目录${cwd}/${rootDir}
@@ -129,7 +133,7 @@ if (!config.noConfig) {
 
 // 输出日志的内容
 let logStr = ''
-
+var logArr = []
 function log (...arg) {
   logStr += format(...arg).replace(/\[\d+m/g, "") + '\n'
   console.log(...arg)
@@ -138,18 +142,28 @@ function log (...arg) {
 function printLogSingleProject (ret, { projectInfo = false } = {}) {
   const config = ret.config
 
+  var logInfo = {}
+
   log(chalk.green("---start-----------------------"))
 
   if (projectInfo) {
     if (config.alias) {
       log(`本地路径：${chalk.blue(config.alias + "（" + config.cwd + "）")}`)
+      logInfo.path = config.alias + "（" + config.cwd + "）"
     } else {
       log(`本地路径：${chalk.blue(config.cwd)}`)
+      logInfo.path = config.cwd
     }
   }
   log(`SVN路径：${chalk.blue(ret.svnInfo.url)}`)
+  logInfo.svnUrl = ret.svnInfo.url
+ 
   log(`新增代码总行数: ${chalk.blue('%d')}`, ret.total);
+  logInfo.newCodeTotalLines = ret.total
+
   log(chalk.green("---end-----------------------"))
+
+  logArr.push(logInfo)
 }
 
 function printLog (ret) {
@@ -168,6 +182,11 @@ async function run () {
 
   if (config.outDir) {
     fs.writeFileSync(path.resolve(config.outDir, "statsvn-output.txt"), logStr)
+
+    if (config.outCsv) {
+      const csv = new ObjectsToCsv(logArr);
+      await csv.toDisk(path.resolve(config.outDir, "statsvn-output.csv"));
+    }
   }
 
   if (config.debug) {

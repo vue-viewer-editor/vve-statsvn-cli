@@ -78,6 +78,7 @@ program
   )
   .option("--debug", "是否开启debug")
   .option("--out-dir <path>", "输出目录")
+  .option("--out-csv", "是否输出csv")
   .option(
     "--config <path>",
     "配置文件的路径，没有配置，默认路径是在${cwd}/vve-statsvn-cli.config.js"
@@ -109,6 +110,8 @@ const config = {
   noConfig: false,
   // 输出的目录
   outDir: '',
+  // 是否输出csv文件
+  outCsv: false,
   // 是否开启debug
   debug: false,
   // svn项目，如果传数组，则优先级比cwd和subSvnPaths更高，则不统计当前svn目录${cwd}/${rootDir}
