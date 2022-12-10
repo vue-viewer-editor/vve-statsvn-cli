@@ -151,6 +151,11 @@ async function runSingle (options) {
           // 如果匹配不上，代表不是这个分支，故不处理，todo 怎样直接在svn导出直接过滤
           if (new RegExp(relativeUrl).test(fileItem._text)) {
             filePath = fileItem._text.replace(new RegExp(relativeUrl), "")
+          } else {
+            const relativeUrl2 = relativeUrl.replace('^', '')
+            if (fileItem._text.startsWith(relativeUrl2)) {
+              filePath = fileItem._text.replace(relativeUrl2, "")
+            }
           }
 
           if (filePath) {
