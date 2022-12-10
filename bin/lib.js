@@ -158,7 +158,7 @@ async function runSingle (options) {
 
              // 忽略的不处理，删除的不处理，特定后缀不处理
             if (config.ingorePaths.reduce((val, item) => !minimatch(filePath, item) && val, true) 
-              && fileItem._attributes.action !== 'D' && fileItem._attributes.kind === 'file' ) {
+            && fileItem._attributes.action !== 'D' && (fileItem._attributes.kind === 'file' || fileItem._attributes.kind === '')) {
 
               const tmpFilePath = path.resolve(statsvnTmpDir, `diff/${version}/${filePath}`)
               
