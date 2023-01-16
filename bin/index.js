@@ -2,7 +2,7 @@
 
 "use strict";
 const program = require("commander");
-const fs = require("fs");
+var fs = require('fs-extra');
 var path = require('path')
 const { loadConfig } = require("./configuration");
 var statsvn = require('./lib')
@@ -187,17 +187,26 @@ async function run () {
   const ret = await statsvn.run(config)
   printLog(ret)
 
+  let outPath = path.resolve(config.cwd)
+  if(config.outDir) {
+    outPath = path.resolve(outPath, config.outDir)
+  }
+
+  if (!fs.existsSync(outPath)) {
+    fs.mkdirsSync(outPath)
+  }
+
   if (config.outDir) {
-    fs.writeFileSync(path.resolve(config.outDir, "statsvn-output.txt"), logStr)
+    fs.writeFileSync(path.resolve(outPath, "statsvn-output.txt"), logStr)
 
     if (config.outCsv) {
       const csv = new ObjectsToCsv(logArr);
-      await csv.toDisk(path.resolve(config.outDir, "statsvn-output.csv"), { bom: true }); // bom为true 解决中文乱码问题
+      await csv.toDisk(path.resolve(outPath, "statsvn-output.csv"), { bom: true }); // bom为true 解决中文乱码问题
     }
-  }
 
-  if (config.debug) {
-    fs.writeFileSync(path.resolve(config.cwd, "./statsvn-debug-return-log.json"), JSON.stringify(ret, null, 2))
+    if (config.debug) {
+      fs.writeFileSync(path.resolve(outPath, "./statsvn-debug-return-log.json"), JSON.stringify(ret, null, 2))
+    }
   }
 }
 

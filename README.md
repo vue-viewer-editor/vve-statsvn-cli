@@ -103,7 +103,7 @@ program
 
 ```javascript
 module.exports = {
-  outDir: 'statsvn'
+  outDir: '.'
 }
 ```
 
