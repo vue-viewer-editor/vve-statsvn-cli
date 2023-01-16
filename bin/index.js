@@ -177,6 +177,13 @@ function printLog (ret) {
 }
 
 async function run () {
+
+  const checkRet = await statsvn.svnCheck()
+  console.log(checkRet.message)
+  if (!checkRet.success) {
+    return
+  }
+
   const ret = await statsvn.run(config)
   printLog(ret)
 

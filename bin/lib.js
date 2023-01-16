@@ -13,7 +13,27 @@ const { info } = require('console');
 
 var fsExistsSync = Util.fsExistsSync
 
+/**
+ * 检测是否正确安装svn
+ */
+async function svnCheck () {
+  const client = new Client()
 
+  const ret = { success: true, message: '', version: '' }
+
+  return new Promise((resolve) => {
+    client.cmd(['--version', '--quiet'], function (err, data) {
+      if (err) {
+        ret.success = false
+        ret.message = '您还没有安装SVN. 您可以在终端上执行`svn help`确认是否安装成功.'
+      } else {
+        ret.version = data.trim()
+        ret.message = 'SVN版本: ' + data.trim()
+      }
+      resolve(ret)
+    })
+  })
+}
 
 /**
  * 单个svn项目
@@ -263,6 +283,7 @@ async function run (options) {
 }
 
 module.exports = {
+  svnCheck,
   runSingle,
   run,
 }
