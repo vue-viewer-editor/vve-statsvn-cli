@@ -192,7 +192,7 @@ async function run () {
 
     if (config.outCsv) {
       const csv = new ObjectsToCsv(logArr);
-      await csv.toDisk(path.resolve(config.outDir, "statsvn-output.csv"));
+      await csv.toDisk(path.resolve(config.outDir, "statsvn-output.csv"), { bom: true }); // bom为true 解决中文乱码问题
     }
   }
 
