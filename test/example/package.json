@@ -4,11 +4,12 @@
   "description": "",
   "main": "",
   "scripts": {
-    "statsvn": "vve-statsvn-cli"
+    "statsvn": "node ../../bin/index.js",
+    "statsvn2": "vve-statsvn-cli"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "vve-statsvn": "^1.1.1"
+    "vve-statsvn": "^1.2.1"
   }
 }
