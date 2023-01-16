@@ -108,7 +108,8 @@ async function runSingle (options) {
 
   // cmd方法
   function clientCmd (client, arr) {
-    const tmpFilePath = path.resolve(statsvnTmpDir, `${arr.join('#').replace(/:/g, "")}`)
+    const tmpFilePath = path.resolve(statsvnTmpDir, '', `${arr.join('#').replace(/:/g, "")}`)
+    const tmpFilePath2 = path.resolve(statsvnTmpDir, 'origin', `${arr.join('#').replace(/:/g, "")}`)
 
     return new Promise((resolve) => {
       if (!fsExistsSync(tmpFilePath)) {
@@ -119,6 +120,8 @@ async function runSingle (options) {
           }
           fs.mkdirsSync(path.dirname(tmpFilePath))
           fs.writeFileSync(tmpFilePath, JSON.stringify(result))
+          fs.mkdirsSync(path.dirname(tmpFilePath2))
+          fs.writeFileSync(tmpFilePath2, data)
           resolve(result)
         })
       } else {
