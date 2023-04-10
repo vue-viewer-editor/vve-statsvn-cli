@@ -22,7 +22,7 @@ svn help
 使用npm安装：
 
 ```
-$ npm install vve-statsvn-cli
+$ npm install vve-statsvn
 ```
 
 ## 使用
