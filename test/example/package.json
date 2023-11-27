@@ -10,6 +10,6 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "vve-statsvn": "^1.3.1"
+    "vve-statsvn": "^1.3.2"
   }
 }
