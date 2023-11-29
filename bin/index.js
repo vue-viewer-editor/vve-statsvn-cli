@@ -144,7 +144,7 @@ function printLogSingleProject (ret, { projectInfo = false } = {}) {
 
   var logInfo = {}
 
-  log(chalk.green("---start-----------------------"))
+  log(chalk.green("---start------------------------"))
 
   if (projectInfo) {
     if (config.alias) {
@@ -161,7 +161,7 @@ function printLogSingleProject (ret, { projectInfo = false } = {}) {
   log(`新增代码总行数: ${chalk.blue('%d')}`, ret.total);
   logInfo.newCodeTotalLines = ret.total
 
-  log(chalk.green("---end-----------------------"))
+  log(chalk.green("---end------------------------"))
 
   logArr.push(logInfo)
 }
