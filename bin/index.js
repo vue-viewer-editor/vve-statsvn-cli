@@ -18,6 +18,18 @@ program
   .version(require('../package.json').version)
   .option("--cwd <path>", "工作目录")
   .option(
+    "--svn-url <path>",
+    "如果配置，则svn log 和 svn diff 则取的svn路径是以此路径为准"
+  )
+  .option(
+    "--sub-path <path>",
+    "在配置svnUrl生效，配置subPath，则在cwd目录创建subPath目录，在此目录下，存放statsvnTmp等缓存文件"
+  )
+  .option(
+    "--auto-sub-path",
+    "在配置svnUrl生效，是否根据svnUrl自动在cwd目录下创建目录，创建目录名根据url生成，存放statsvnTmp等文件，如果为true，则subPath失效"
+  )
+  .option(
     "--svn-project-paths <items>",
     "多项目svn的完整路径，用逗号隔开",
     commaSeparatedList
@@ -79,6 +91,12 @@ const config = {
   outCsv: false,
   // 是否开启debug
   debug: false,
+  // 如果配置，则svn log 和 svn diff 则取的svn路径是以此路径为准
+  svnUrl: '',
+  // 在配置svnUrl生效，配置subPath，则在cwd目录创建subPath目录，在此目录下，存放statsvnTmp等缓存文件
+  subPath: '',
+  // 在配置svnUrl生效，是否根据svnUrl自动在cwd目录下创建目录，创建目录名根据url生成，存放statsvnTmp等文件，如果为true，则subPath失效
+  autoSubPath: false, 
   // svn项目，如果传数组，则优先级比cwd和subSvnPaths更高，则不统计当前svn目录${cwd}/${rootDir}
   svnProjectPaths: [],
   // 仅统计项目下subSvnPaths指定的svn目录
@@ -141,6 +159,7 @@ function log (...arg) {
 
 function printLogSingleProject (ret, { projectInfo = false } = {}) {
   const config = ret.config
+  const workspacePath = ret.workspacePath
 
   var logInfo = {}
 
@@ -148,11 +167,11 @@ function printLogSingleProject (ret, { projectInfo = false } = {}) {
 
   if (projectInfo) {
     if (config.alias) {
-      log(`本地路径：${chalk.blue(config.alias + "（" + config.cwd + "）")}`)
-      logInfo.path = config.alias + "（" + config.cwd + "）"
+      log(`本地路径：${chalk.blue(config.alias + "（" + workspacePath + "）")}`)
+      logInfo.path = config.alias + "（" + workspacePath + "）"
     } else {
-      log(`本地路径：${chalk.blue(config.cwd)}`)
-      logInfo.path = config.cwd
+      log(`本地路径：${chalk.blue(workspacePath)}`)
+      logInfo.path = workspacePath
     }
   }
   log(`SVN路径：${chalk.blue(ret.svnInfo.url || '')}`)

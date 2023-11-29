@@ -9,8 +9,9 @@
 - 支持集成进由npm管理的项目
 - 支持根据时间范围统计
 - 支持指定代码提交者
-- 支持多个svn项目统计
+- 支持多个svn项目统计, 支持本地检出目录或线上地址
 - 支持单项目多个SVN路径统计
+- 支持指定SVN线上地址统计，无需检出项目
 
 ## 安装
 
@@ -46,6 +47,18 @@ $ npm install vve-statsvn
 program
   .version(require('../package.json').version)
   .option("--cwd <path>", "工作目录")
+  .option(
+    "--svn-url <path>",
+    "如果配置，则svn log 和 svn diff 则取的svn路径是以此路径为准"
+  )
+  .option(
+    "--sub-path <path>",
+    "在配置svnUrl生效，配置subPath，则在cwd目录创建subPath目录，在此目录下，存放statsvnTmp等缓存文件"
+  )
+  .option(
+    "--auto-sub-path",
+    "在配置svnUrl生效，是否根据svnUrl自动在cwd目录下创建目录，创建目录名根据url生成，存放statsvnTmp等文件，如果为true，则subPath失效"
+  )
   .option(
     "--svn-project-paths <items>",
     "多项目svn的完整路径，用逗号隔开",
@@ -123,6 +136,12 @@ const config = {
   outCsv: false,
   // 是否开启debug
   debug: false,
+  // 如果配置，则svn log 和 svn diff 则取的svn路径是以此路径为准
+  svnUrl: '',
+  // 在配置svnUrl生效，配置subPath，则在cwd目录创建subPath目录，在此目录下，存放statsvnTmp等缓存文件
+  subPath: '',
+  // 在配置svnUrl生效，是否根据svnUrl自动在cwd目录下创建目录，创建目录名根据url生成，存放statsvnTmp等文件，如果为true，则subPath失效
+  autoSubPath: false, 
   // svn项目，如果传数组，则优先级比cwd和subSvnPaths更高，则不统计当前svn目录${cwd}/${rootDir}
   svnProjectPaths: [],
   // 仅统计项目下subSvnPaths指定的svn目录

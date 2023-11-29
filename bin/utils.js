@@ -1,6 +1,7 @@
 "use strict";
 const path = require("path");
 const fs = require("fs");
+const url = require('url');
 
 // 判断文件是否存在
 function fsExistsSync(path) {
@@ -64,3 +65,29 @@ function testRules(key, keyRules = []) {
 }
 
 exports.testRules = testRules;
+
+// 根据url地址生成一个文件路径
+function generateFolderPathFromUrl(urlString) {
+  const parsedUrl = url.parse(urlString);
+  const pathname = parsedUrl.pathname;
+  if (pathname) {
+    const folders = pathname.split('/').filter(folder => folder !== '');
+    return folders.join("_");
+  }
+  return ''
+}
+
+exports.generateFolderPathFromUrl = generateFolderPathFromUrl;
+
+// url 路径拼接
+function joinUrlPath(baseUrl, relativePath) {
+  if (relativePath.startsWith('/')) {
+    relativePath = relativePath.substring(1);
+  }
+  if (baseUrl.endsWith('/')) {
+    baseUrl = baseUrl.substring(0, baseUrl.length - 1);
+  }
+  return `${baseUrl}/${relativePath}`
+}
+
+exports.joinUrlPath = joinUrlPath;

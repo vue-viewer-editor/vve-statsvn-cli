@@ -12,6 +12,8 @@ var moment = require('moment');
 const { info } = require('console');
 
 var fsExistsSync = Util.fsExistsSync
+var generateFolderPathFromUrl = Util.generateFolderPathFromUrl
+var joinUrlPath = Util.joinUrlPath
 
 /**
  * 检测是否正确安装svn
@@ -55,6 +57,9 @@ async function runSingle (options) {
     svnEndDayTime: moment().format("YYYY-MM-DD 23:59:59"),
     maxLineThreshold: 0, // 最大行数阈值，如果一个文件超过最大行数，则不处理他的新增行数信息 0代表不限制
     delTmpAfterRunSingle: false, // 执行完单个删除临时文件
+    svnUrl: '', // 如果配置，则svn log 和 svn diff 则取的svn路径是以此路径为准
+    subPath: '', // 在配置svnUrl生效，配置subPath，则在cwd目录创建subPath下，存放statsvnTmp等缓存文件
+    autoSubPath: false, // 在配置svnUrl生效，是否根据svnUrl自动在cwd目录下创建目录，存放statsvnTmp等文件，如果为true，则subPath失效
   }, options)
 
   if (!config.svnRevisionARG) {
@@ -76,21 +81,46 @@ async function runSingle (options) {
     ingorePaths: [], // { path: '', err: '' }
     overMaxLineThresholdPaths: [], // { path: '' }
     svnInfo: {}, // { url: '' }
+    workspacePath: '',
   }
 
+  
+  let tmpDir = path.resolve(config.cwd)
+
+  // 在配置svnUrl生效，配置subPath，则在cwd目录创建subPath下，存放statsvnTmp等缓存文件
+  // 如果autoSubPath未true，则subPath失效
+  if (config.svnUrl) {
+    if (config.autoSubPath) {
+      tmpDir = path.resolve(config.cwd, generateFolderPathFromUrl(config.svnUrl))
+    } else if (config.subPath) {
+      tmpDir = path.resolve(config.cwd, config.subPath)
+    }
+  }
+
+  // 设置工作输出目录
+  ret.workspacePath = tmpDir
+
   // 创建缓存目录
-  const statsvnTmpDir = path.resolve(config.cwd, 'statsvnTmp')
+  const statsvnTmpDir = path.resolve(tmpDir, 'statsvnTmp')
+
   if (!fsExistsSync(statsvnTmpDir)) {
-    fs.mkdirSync(statsvnTmpDir)
+    fs.mkdirsSync(statsvnTmpDir)
+  }
+
+  // 唯一标识，缓存的时候进行区分
+  let uniqTag = generateFolderPathFromUrl(config.svnUrl)
+  if (uniqTag) {
+    uniqTag = `-${uniqTag}`
   }
 
   // promise方法
   function clientGetInfo (client) {
-    const tmpFilePath = path.resolve(statsvnTmpDir, `svn-info.json`)
+    const tmpFilePath = path.resolve(statsvnTmpDir, `svn-info${uniqTag}.json`)
     return new Promise((resolve) => {
 
       if (!fsExistsSync(tmpFilePath)) {
-        client.getInfo(function (err, data) {
+        // 如果 svnUrl 有值，则已此svnUrl远程地址的信息，否则取cwd所在的的svn仓库信息
+        client.getInfo([ config.svnUrl ], function (err, data) {
           const result = {
             err,
             data
@@ -140,7 +170,8 @@ async function runSingle (options) {
 
     ret.svnInfo = infoResult.data
 
-    let logResult = await clientCmd(client, ['log', '-r', config.svnRevisionARG, '--xml', '-v'])
+    // 如果 svnUrl 有值，则已此svnUrl远程地址的信息，否则取cwd所在的的svn仓库信息
+    let logResult = await clientCmd(client, ['log', config.svnUrl, '-r', config.svnRevisionARG, '--xml', '-v'])
 
     if (!logResult.err) {
       const xmlResult = convert.xml2js(logResult.data, {
@@ -148,7 +179,7 @@ async function runSingle (options) {
         spaces: 4
       })
 
-      fs.writeFileSync(path.resolve(statsvnTmpDir, `./svn-log-${config.svnRevisionARG.replace(/:/g, "")}.json`), JSON.stringify(xmlResult, null, 2))
+      fs.writeFileSync(path.resolve(statsvnTmpDir, `./svn-log-${config.svnRevisionARG.replace(/:/g, "")}${uniqTag}.json`), JSON.stringify(xmlResult, null, 2))
 
       if (!xmlResult.log.logentry) {
         xmlResult.log.logentry = []
@@ -191,9 +222,10 @@ async function runSingle (options) {
             && fileItem._attributes.action !== 'D' && (fileItem._attributes.kind === 'file' || fileItem._attributes.kind === '')) {
 
               const tmpFilePath = path.resolve(statsvnTmpDir, `diff/${version}/${filePath}`)
-              
+
               // diff比较
-              let diffResult = await clientCmd(client, ['diff', '-c', version, filePath])
+              // 如果 svnUrl 有值，则已此svnUrl远程地址的信息，否则取cwd所在的的svn仓库信息
+              let diffResult = await clientCmd(client, ['diff', '-c', version, joinUrlPath(svnUrl, filePath)])
 
               if (diffResult.err) {
                 ret.failPaths.push({ path: filePath, err: diffResult.err })
@@ -223,7 +255,7 @@ async function runSingle (options) {
     }
   }
 
-  fs.writeFileSync(path.resolve(statsvnTmpDir, `./svn-statsvn-${config.svnRevisionARG.replace(/:/g, "")}.json`), JSON.stringify(ret, null, 2))
+  fs.writeFileSync(path.resolve(statsvnTmpDir, `./svn-statsvn-${config.svnRevisionARG.replace(/:/g, "")}${uniqTag}.json`), JSON.stringify(ret, null, 2))
 
   if (config.delTmpAfterRunSingle) {
     fs.removeSync(statsvnTmpDir)
