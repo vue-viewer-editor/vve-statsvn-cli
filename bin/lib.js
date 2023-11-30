@@ -9,6 +9,8 @@ var Util = require('./utils')
 var minimatch = require("minimatch")
 var path = require('path')
 var moment = require('moment');
+var md5 = require('md5');
+
 const { info } = require('console');
 
 var fsExistsSync = Util.fsExistsSync
@@ -60,6 +62,9 @@ async function runSingle (options) {
     svnUrl: '', // 如果配置，则svn log 和 svn diff 则取的svn路径是以此路径为准
     subPath: '', // 在配置svnUrl生效，配置subPath，则在cwd目录创建subPath下，存放statsvnTmp等缓存文件
     autoSubPath: false, // 在配置svnUrl生效，是否根据svnUrl自动在cwd目录下创建目录，存放statsvnTmp等文件，如果为true，则subPath失效
+    svnUsername: '', // svn用户名，为空表示如果不需要认证或者使用系统认证缓存信息
+    svnPassword: '', // svn密码，为空表示如果不需要认证或者使用系统认证缓存信息
+    noAuthCache: false, // 是否缓存认证信息，如果为true，当前机器将不缓存当前用户信息
   }, options)
 
   if (!config.svnRevisionARG) {
@@ -68,9 +73,9 @@ async function runSingle (options) {
 
   var client = new Client({
     cwd: path.resolve(config.cwd), // 项目路径
-    // username: 'username', // optional if authentication not required or is already saved
-    // password: 'password', // optional if authentication not required or is already saved
-    // noAuthCache: true, // optional, if true, username does not become the logged in user on the machine
+    username: config.svnUsername || undefined,  // optional if authentication not required or is already saved
+    password: config.svnPassword || undefined,  // optional if authentication not required or is already saved
+    noAuthCache: config.noAuCache, // optional, if true, username does not become the logged in user on the machine
   });
 
   var ret = {
@@ -83,7 +88,6 @@ async function runSingle (options) {
     svnInfo: {}, // { url: '' }
     workspacePath: '',
   }
-
   
   let tmpDir = path.resolve(config.cwd)
 
@@ -111,6 +115,9 @@ async function runSingle (options) {
   let uniqTag = generateFolderPathFromUrl(config.svnUrl)
   if (uniqTag) {
     uniqTag = `-${uniqTag}`
+  }
+  if (config.svnUsername || config.svnPassword) {
+    uniqTag += `-${md5(config.svnUsername + '@@##@@' + config.svnPassword)}`
   }
 
   // promise方法
