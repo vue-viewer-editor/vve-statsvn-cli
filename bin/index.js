@@ -153,7 +153,8 @@ if (!config.noConfig) {
 let logStr = ''
 var logArr = []
 function log (...arg) {
-  logStr += format(...arg).replace(/\[\d+m/g, "") + '\n'
+  const reg = new RegExp(String.fromCharCode(27) + '\\[\\d\+m', 'g')
+  logStr += format(...arg).replace(reg, "") + '\n'
   console.log(...arg)
 }
 
