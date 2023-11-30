@@ -10,8 +10,7 @@ var minimatch = require("minimatch")
 var path = require('path')
 var moment = require('moment');
 var md5 = require('md5');
-
-const { info } = require('console');
+var chalk = require('chalk')
 
 var fsExistsSync = Util.fsExistsSync
 var generateFolderPathFromUrl = Util.generateFolderPathFromUrl
@@ -132,6 +131,19 @@ async function runSingle (options) {
           err,
           data
         }
+
+        if (err) {
+          console.log(chalk.red("---error start------------------"))
+          if (config.cwd) {
+            console.log(chalk.red(`CWD: ${config.cwd}`))
+          }
+          if (config.svnUrl) {
+            console.log(chalk.red(`SVN: ${config.svnUrl}`))
+          }
+          console.log(chalk.red(`svn获取log失败，请检查svn路径、用户、密码等信息是否正确`))
+          console.log(chalk.red("---error end--------------------"))
+        }
+
         fs.mkdirsSync(path.dirname(tmpFilePath))
         fs.writeFileSync(tmpFilePath, JSON.stringify(result, null, 2))
         resolve(result)
