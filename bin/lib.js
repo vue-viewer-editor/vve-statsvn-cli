@@ -26,7 +26,7 @@ async function svnCheck () {
   const ret = { success: true, message: '', version: '' }
 
   return new Promise((resolve) => {
-    client.cmd(['--version', '--quiet'], function (err, data) {
+    client.session('silent', true).cmd(['--version', '--quiet'], function (err, data) {
       if (err) {
         ret.success = false
         ret.message = '您还没有安装SVN. 您可以在终端上执行`svn help`确认是否安装成功.'
@@ -123,22 +123,32 @@ async function runSingle (options) {
   // promise方法
   function clientGetInfo (client) {
     const tmpFilePath = path.resolve(statsvnTmpDir, `svn-info${uniqTag}.json`)
-    return new Promise((resolve) => {
 
+    // 发起获取信息的请求
+    function realGeInfo (resolve) {
+      // 如果 svnUrl 有值，则已此svnUrl远程地址的信息，否则取cwd所在的的svn仓库信息
+      client.getInfo([ config.svnUrl ], function (err, data) {
+        const result = {
+          err,
+          data
+        }
+        fs.mkdirsSync(path.dirname(tmpFilePath))
+        fs.writeFileSync(tmpFilePath, JSON.stringify(result, null, 2))
+        resolve(result)
+      })
+    }
+
+    return new Promise((resolve) => {
       if (!fsExistsSync(tmpFilePath)) {
-        // 如果 svnUrl 有值，则已此svnUrl远程地址的信息，否则取cwd所在的的svn仓库信息
-        client.getInfo([ config.svnUrl ], function (err, data) {
-          const result = {
-            err,
-            data
-          }
-          fs.mkdirsSync(path.dirname(tmpFilePath))
-          fs.writeFileSync(tmpFilePath, JSON.stringify(result, null, 2))
-          resolve(result)
-        })
+        realGeInfo(resolve)
       } else {
         const result = JSON.parse(fs.readFileSync(tmpFilePath).toString())
-        resolve(result)
+        if (!result.err) {
+          resolve(result)
+        } else {
+          // 如果报错，还是重新发起请求
+          realGeInfo(resolve)
+        }
       }
     })
   }
@@ -150,7 +160,7 @@ async function runSingle (options) {
 
     return new Promise((resolve) => {
       if (!fsExistsSync(tmpFilePath)) {
-        client.cmd(arr, function (err, data) {
+        client.session('silent', true).cmd(arr, function (err, data) {
           const result = {
             err,
             data
