@@ -126,7 +126,9 @@ async function runSingle (options) {
     // 发起获取信息的请求
     function realGeInfo (resolve) {
       // 如果 svnUrl 有值，则已此svnUrl远程地址的信息，否则取cwd所在的的svn仓库信息
-      client.getInfo([ config.svnUrl ], function (err, data) {
+      const params = [ config.svnUrl ]
+      console.log(`svn ${['info', '--xml'].concat(params).join(' ')}`)
+      client.getInfo(params, function (err, data) {
         const result = {
           err,
           data
@@ -140,7 +142,7 @@ async function runSingle (options) {
           if (config.svnUrl) {
             console.log(chalk.red(`SVN: ${config.svnUrl}`))
           }
-          console.log(chalk.red(`svn获取log失败，请检查svn路径、用户、密码等信息是否正确`))
+          console.log(chalk.red(`svn获取项目信息失败，请检查svn路径、用户、密码等信息是否正确`))
           console.log(chalk.red("---error end--------------------"))
         }
 
@@ -172,6 +174,7 @@ async function runSingle (options) {
 
     return new Promise((resolve) => {
       if (!fsExistsSync(tmpFilePath)) {
+        console.log(`svn ${arr.join(' ')}`)
         client.session('silent', true).cmd(arr, function (err, data) {
           const result = {
             err,
