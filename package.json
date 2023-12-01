@@ -1,6 +1,6 @@
 {
   "name": "vve-statsvn",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "node state svn",
   "scripts": {
     "start": "node ./bin/index.js",
