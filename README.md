@@ -60,7 +60,7 @@ program
     "svn密码，为空表示如果不需要认证或者使用系统认证缓存信息"
   )
   .option(
-    "--no-auth-cache",
+    "--disable-auth-cache",
     "是否缓存认证信息，如果为true，当前机器将不缓存当前用户信息"
   )
   .option(
@@ -110,6 +110,10 @@ program
     "--del-tmp-after-run-single",
     "统计完一个svn项目的删除临时目录"
   )
+  .option(
+    "--disable-cache-for-some-cmd",
+    "某些命令不缓存，比如svn log和svn info, 因为这些命令在相同参数下随着时间推移返回的结果会不一样"
+  )
   .option("--debug", "是否开启debug")
   .option("--out-dir <path>", "输出目录")
   .option("--out-csv", "是否输出csv")
@@ -117,7 +121,7 @@ program
     "--config <path>",
     "配置文件的路径，没有配置，默认路径是在${cwd}/vve-statsvn-cli.config.js"
   )
-  .option("--no-config", "是否取配置文件")
+  .option("--disable-config-file", "是否取配置文件")
   .parse(process.argv);
 
 ```
@@ -142,7 +146,7 @@ const config = {
   // 配置文件的路径，没有配置，默认路径是在${cwd}/vve-statsvn-cli.config.js
   config: undefined,
   // 是否取配置文件
-  noConfig: false,
+  disableConfigFile: false,
   // 输出的目录
   outDir: '',
   // 是否输出csv文件
@@ -156,7 +160,7 @@ const config = {
    // svn密码，为空表示如果不需要认证或者使用系统认证缓存信息
   svnPassword: '',
   // 是否缓存认证信息，如果为true，当前机器将不缓存当前用户信息
-  noAuthCache: false,
+  disableAuthCache: false,
   // 在配置svnUrl生效，配置subPath，则在cwd目录创建subPath目录，在此目录下，存放statsvnTmp等缓存文件
   subPath: '',
   // 在配置svnUrl生效，是否根据svnUrl自动在cwd目录下创建目录，创建目录名根据url生成，存放statsvnTmp等文件，如果为true，则subPath失效
@@ -189,6 +193,8 @@ const config = {
   maxLineThreshold: 0,
   // 统计完一个svn项目的删除临时目录
   delTmpAfterRunSingle: false,
+  // 如果为true, 某些命令不缓存，比如svn log和svn info, 因为这些命令在相同参数下随着时间推移返回的结果会不一样
+  disableCacheForSomeCmd: false,
 }
 ```
 

@@ -63,7 +63,8 @@ async function runSingle (options) {
     autoSubPath: false, // 在配置svnUrl生效，是否根据svnUrl自动在cwd目录下创建目录，存放statsvnTmp等文件，如果为true，则subPath失效
     svnUsername: '', // svn用户名，为空表示如果不需要认证或者使用系统认证缓存信息
     svnPassword: '', // svn密码，为空表示如果不需要认证或者使用系统认证缓存信息
-    noAuthCache: false, // 是否缓存认证信息，如果为true，当前机器将不缓存当前用户信息
+    disableAuthCache: false, // 是否缓存认证信息，如果为true，当前机器将不缓存当前用户信息
+    disableCacheForSomeCmd: false, // 如果为true, 某些命令不缓存，比如svn log和svn info, 因为这些命令在相同参数下随着时间推移返回的结果会不一样
   }, options)
 
   if (!config.svnRevisionARG) {
@@ -74,7 +75,7 @@ async function runSingle (options) {
     cwd: path.resolve(config.cwd), // 项目路径
     username: config.svnUsername || undefined,  // optional if authentication not required or is already saved
     password: config.svnPassword || undefined,  // optional if authentication not required or is already saved
-    noAuthCache: config.noAuCache, // optional, if true, username does not become the logged in user on the machine
+    noAuthCache: config.disableAuthCache, // optional, if true, username does not become the logged in user on the machine
   });
 
   var ret = {
@@ -169,7 +170,8 @@ async function runSingle (options) {
   }
 
   // cmd方法
-  function clientCmd (client, arr) {
+  function clientCmd (client, arr, options = { noCache: false }) {
+    
     const tmpFilePath = path.resolve(statsvnTmpDir, 'cache', `${arr.join('#').replace(/:/g, "")}`)
     const tmpFilePath2 = path.resolve(statsvnTmpDir, 'origin', `${arr.join('#').replace(/:/g, "")}`)
 
@@ -196,7 +198,7 @@ async function runSingle (options) {
 
     return new Promise((resolve) => {
       // 优先取缓存
-      if (!fsExistsSync(tmpFilePath)) {
+      if (!fsExistsSync(tmpFilePath) || options.noCache) {
         realCmd(resolve)
       } else {
         const result = JSON.parse(fs.readFileSync(tmpFilePath).toString())
@@ -211,7 +213,7 @@ async function runSingle (options) {
   }
 
   async function clientGetInfo2 (client) {
-    var infoResult = await clientCmd(client, ['info', '--xml', config.svnUrl])
+    var infoResult = await clientCmd(client, ['info', '--xml', config.svnUrl], { noCache: config.disableCacheForSomeCmd })
     if (!infoResult.err) {
       const xmlResult = convert.xml2js(infoResult.data, {
         compact: true,
@@ -234,7 +236,7 @@ async function runSingle (options) {
     ret.svnInfo = infoResult.data
 
     // 如果 svnUrl 有值，则已此svnUrl远程地址的信息，否则取cwd所在的的svn仓库信息
-    let logResult = await clientCmd(client, ['log', config.svnUrl, '-r', config.svnRevisionARG, '--xml', '-v'])
+    let logResult = await clientCmd(client, ['log', config.svnUrl, '-r', config.svnRevisionARG, '--xml', '-v'], { noCache: config.disableCacheForSomeCmd })
 
     if (!logResult.err) {
       const xmlResult = convert.xml2js(logResult.data, {
