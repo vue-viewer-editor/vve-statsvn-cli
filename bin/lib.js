@@ -195,10 +195,12 @@ async function runSingle (options) {
     }
 
     return new Promise((resolve) => {
+      // 优先取缓存
       if (!fsExistsSync(tmpFilePath)) {
         realCmd(resolve)
       } else {
         const result = JSON.parse(fs.readFileSync(tmpFilePath).toString())
+        // 如果缓存的上一次执行结果出现异常，则重新调用命令获取最新结果
         if (result.err) {
           realCmd(resolve)
         } else {
