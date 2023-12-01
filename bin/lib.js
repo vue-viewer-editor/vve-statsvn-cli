@@ -230,7 +230,6 @@ async function runSingle (options) {
 
   var infoResult = await clientGetInfo2(client)
   if (!infoResult.err) {
-    const svnUrl = infoResult.data.url
     const relativeUrl = infoResult.data['relative-url']
 
     ret.svnInfo = infoResult.data
@@ -290,7 +289,7 @@ async function runSingle (options) {
 
               // diff比较
               // 如果 svnUrl 有值，则已此svnUrl远程地址的信息，否则取cwd所在的的svn仓库信息
-              let diffResult = await clientCmd(client, ['diff', '-c', version, joinUrlPath(svnUrl, filePath)])
+              let diffResult = await clientCmd(client, ['diff', '-c', version, joinUrlPath(config.svnUrl, filePath)])
 
               if (diffResult.err) {
                 ret.failPaths.push({ path: filePath, err: diffResult.err })

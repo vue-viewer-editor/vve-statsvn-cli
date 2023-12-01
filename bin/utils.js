@@ -81,6 +81,12 @@ exports.generateFolderPathFromUrl = generateFolderPathFromUrl;
 
 // url 路径拼接
 function joinUrlPath(baseUrl, relativePath) {
+  if (!baseUrl) {
+    return relativePath
+  }
+  if (!relativePath) {
+    return baseUrl
+  }
   if (relativePath.startsWith('/')) {
     relativePath = relativePath.substring(1);
   }
