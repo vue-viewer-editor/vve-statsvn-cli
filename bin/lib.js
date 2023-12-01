@@ -119,7 +119,7 @@ async function runSingle (options) {
     uniqTag += `-${md5(config.svnUsername + '@@##@@' + config.svnPassword)}`
   }
 
-  // promise方法
+  // 获取项目信息，废弃
   function clientGetInfo (client) {
     const tmpFilePath = path.resolve(statsvnTmpDir, `svn-info${uniqTag}.json`)
 
@@ -136,13 +136,14 @@ async function runSingle (options) {
 
         if (err) {
           console.log(chalk.red("---error start------------------"))
+          console.log(chalk.red(`错误信息: ${err.message}`))
           if (config.cwd) {
             console.log(chalk.red(`CWD: ${config.cwd}`))
           }
           if (config.svnUrl) {
             console.log(chalk.red(`SVN: ${config.svnUrl}`))
           }
-          console.log(chalk.red(`svn获取项目信息失败，请检查svn路径、用户、密码等信息是否正确`))
+          console.log(chalk.red(`建议：svn获取项目信息失败，请检查svn路径、用户、密码等信息是否正确，网络是否通畅`))
           console.log(chalk.red("---error end--------------------"))
         }
 
@@ -172,30 +173,58 @@ async function runSingle (options) {
     const tmpFilePath = path.resolve(statsvnTmpDir, '', `${arr.join('#').replace(/:/g, "")}`)
     const tmpFilePath2 = path.resolve(statsvnTmpDir, 'origin', `${arr.join('#').replace(/:/g, "")}`)
 
+    function realCmd (resolve) {
+      console.log(`svn ${arr.join(' ')}`)
+      client.session('silent', true).cmd(arr, function (err, data) {
+        const result = {
+          err,
+          data
+        }
+        if (err) {
+          result.errMsg = err && err.message && err.message.split('\n')[0]
+          console.log(chalk.red(result.errMsg))
+        }
+        fs.mkdirsSync(path.dirname(tmpFilePath))
+        fs.writeFileSync(tmpFilePath, JSON.stringify(result))
+        if (!err) {
+          fs.mkdirsSync(path.dirname(tmpFilePath2))
+          fs.writeFileSync(tmpFilePath2, data)
+        }
+        resolve(result)
+      })
+    }
+
     return new Promise((resolve) => {
       if (!fsExistsSync(tmpFilePath)) {
-        console.log(`svn ${arr.join(' ')}`)
-        client.session('silent', true).cmd(arr, function (err, data) {
-          const result = {
-            err,
-            data
-          }
-          fs.mkdirsSync(path.dirname(tmpFilePath))
-          fs.writeFileSync(tmpFilePath, JSON.stringify(result))
-          if (!err) {
-            fs.mkdirsSync(path.dirname(tmpFilePath2))
-            fs.writeFileSync(tmpFilePath2, data)
-          }
-          resolve(result)
-        })
+        realCmd(resolve)
       } else {
         const result = JSON.parse(fs.readFileSync(tmpFilePath).toString())
-        resolve(result)
+        if (result.err) {
+          realCmd(resolve)
+        } else {
+          resolve(result)
+        }
       }
     })
   }
 
-  var infoResult = await clientGetInfo(client)
+  async function clientGetInfo2 (client) {
+    var infoResult = await clientCmd(client, ['info', '--xml', config.svnUrl])
+    if (!infoResult.err) {
+      const xmlResult = convert.xml2js(infoResult.data, {
+        compact: true,
+        spaces: 4
+      })
+      infoResult.data = {
+        ...xmlResult,
+        url: xmlResult.info.entry.url._text, // 兼容clientGetInfo写法返回
+        'relative-url': xmlResult.info.entry['relative-url']._text, // 兼容clientGetInfo写法返回
+      }
+    }
+    return infoResult
+  }
+
+  var infoResult = await clientGetInfo2(client)
   if (!infoResult.err) {
     const svnUrl = infoResult.data.url
     const relativeUrl = infoResult.data['relative-url']
