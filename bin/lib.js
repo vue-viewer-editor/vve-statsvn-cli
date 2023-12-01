@@ -170,7 +170,7 @@ async function runSingle (options) {
 
   // cmd方法
   function clientCmd (client, arr) {
-    const tmpFilePath = path.resolve(statsvnTmpDir, '', `${arr.join('#').replace(/:/g, "")}`)
+    const tmpFilePath = path.resolve(statsvnTmpDir, 'cache', `${arr.join('#').replace(/:/g, "")}`)
     const tmpFilePath2 = path.resolve(statsvnTmpDir, 'origin', `${arr.join('#').replace(/:/g, "")}`)
 
     function realCmd (resolve) {
