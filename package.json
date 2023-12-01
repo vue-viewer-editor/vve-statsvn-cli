@@ -1,6 +1,6 @@
 {
   "name": "vve-statsvn",
-  "version": "2.2.5",
+  "version": "2.2.6",
   "description": "node state svn",
   "scripts": {
     "start": "node ./bin/index.js",
@@ -30,14 +30,14 @@
   },
   "homepage": "https://github.com/vue-viewer-editor/vve-statsvn-cli#readme",
   "dependencies": {
-    "chalk": "^4.1.2",
+    "chalk": "^2.0.1",
     "commander": "^3.0.2",
     "debug": "^4.1.1",
     "format": "^0.2.2",
     "fs-extra": "^10.1.0",
     "jsonfile": "^5.0.0",
     "md5": "^2.3.0",
-    "minimatch": "^9.0.3",
+    "minimatch": "^3.0.4",
     "moment": "^2.29.4",
     "objects-to-csv": "^1.3.6",
     "svn-spawn": "^0.1.6",
