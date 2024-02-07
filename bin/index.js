@@ -151,6 +151,8 @@ const config = {
   disableCacheForSomeCmd: false,
 }
 
+Object.assign(config, program);
+
 config.maxLineThreshold = Number(config.maxLineThreshold) // 转成数字
 
 const CONFIG_JS_FILENAME = "vve-statsvn-cli.config.js";
