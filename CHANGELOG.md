@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.2.7](https://github.com/vue-viewer-editor/vve-statsvn-cli/compare/v2.2.6...v2.2.7) (2024-02-07)
+
 ### [2.2.6](https://github.com/vue-viewer-editor/vve-statsvn-cli/compare/v2.2.5...v2.2.6) (2023-12-01)
 
 ### [2.2.5](https://github.com/vue-viewer-editor/vve-statsvn-cli/compare/v2.2.3...v2.2.5) (2023-12-01)
